@@ -89,6 +89,13 @@ state.orders.forEach(o=>{
   if(o.paidAt===undefined) o.paidAt = "";
   if(o.invoiceNote===undefined) o.invoiceNote = "";
 });
+// V3.4.1 migration: repair the known demo hoodie order if an older localStorage version stored 5 €.
+const demoHoodie=state.orders.find(o=>o.id==="KC-2026-0042" && o.type==="Hoodie / Pullover");
+if(demoHoodie){
+  demoHoodie.priceMin=8;
+  demoHoodie.priceMax=12;
+  if(Number(demoHoodie.finalPrice)===5) demoHoodie.finalPrice=10;
+}
 const save = () => localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
 
 async function filesToAttachments(fileList){
@@ -132,6 +139,7 @@ function previewBlock(o){
     </div>
   </div>`;
 }
+save(); // persist V3.4.1 migrations
 const root = document.getElementById("viewRoot");
 const title = document.getElementById("pageTitle");
 const subtitle = document.getElementById("pageSubtitle");
