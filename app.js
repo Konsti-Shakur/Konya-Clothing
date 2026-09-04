@@ -77,6 +77,11 @@ const seed = {
 
 let state = JSON.parse(localStorage.getItem("konyaAdminStateV3") || "null") || seed;
 if(!state.pricing) state.pricing = defaultPricing;
+state.orders.forEach(o=>{
+  if(!o.paymentStatus) o.paymentStatus = o.finalPrice ? "Zahlung offen" : "Nicht berechnet";
+  if(o.paidAt===undefined) o.paidAt = "";
+  if(o.invoiceNote===undefined) o.invoiceNote = "";
+});
 const save = () => localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
 
 async function filesToAttachments(fileList){
@@ -138,6 +143,12 @@ function statusClass(s){
   if(/überfällig|storniert|dringend/i.test(s)) return "danger";
   return "new";
 }
+function paymentClass(s){
+  if(s==="Bezahlt") return "done";
+  if(s==="Zahlung offen") return "wait";
+  if(s==="Storniert") return "danger";
+  return "new";
+}
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
 function kpi(label,val,foot,cls=""){return `<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-foot">${foot}</div></div>`}
 
@@ -152,6 +163,7 @@ function dashboard(){
       ${kpi("Offene Aufträge",state.orders.length,"Aktuell in Arbeit")}
       ${kpi("Offene Tickets",openTickets,"Support & Änderungen")}
       ${kpi("Dringend",urgent,"Benötigt Aufmerksamkeit",urgent?"alert":"")}
+      ${kpi("Offene Zahlungen",state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length,"Noch nicht bezahlt")}
     </div>
     <div class="grid two-col">
       <div class="panel"><div class="panel-head"><h3>Offene Aufträge</h3><span>${state.orders.length} aktuell</span></div><div class="panel-body table-wrap">
@@ -161,6 +173,7 @@ function dashboard(){
         <div class="attention-item"><div class="attention-icon">!</div><div><strong>${urgent} dringende Tickets</strong><small>Supportfälle mit hoher Priorität prüfen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis nach Aufwand festlegen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">✓</div><div><strong>${state.clothing.filter(c=>c.status==="Kundenvorschau").length} Vorschau wartet</strong><small>Kundenfreigabe steht noch aus.</small></div></div>
+        <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</strong><small>Bezahlstatus der Aufträge prüfen.</small></div></div>
       </div></div>
     </div>`;
 }
@@ -168,7 +181,7 @@ function dashboard(){
 function genericTable(view){
   const configs={
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
-    orders:{t:"Aufträge",s:"Anfrage, Richtpreis, Endpreis und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Organisation","Leistung","Richtpreis","Endpreis","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
+    orders:{t:"Aufträge",s:"Anfrage, Preis, Zahlung und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Organisation","Leistung","Richtpreis","Endpreis","Zahlung","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${paymentClass(x.paymentStatus)}">${x.paymentStatus}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
     customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
     tickets:{t:"Tickets",s:"Support, Änderungswünsche und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[x.id,x.title,x.client,x.priority,`<span class="status ${statusClass(x.priority==="Dringend"?"Dringend":x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
     employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
@@ -236,6 +249,7 @@ function customerArea(){
       <div class="detail-row"><span>Leistung</span><b>${o.type}</b></div>
       <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
       <div class="detail-row"><span>Endpreis</span><b>${o.finalPrice?eur(o.finalPrice):"Noch offen"}</b></div>
+      <div class="detail-row"><span>Zahlung</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
       <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
       <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
       <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
@@ -374,6 +388,19 @@ window.openOrderDetail=function(id){
         <button class="primary-btn" style="margin-top:10px;width:100%" onclick="saveFinalPrice('${o.id}')">Preisangebot speichern</button>
         <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
       </div>
+      <div class="detail-card">
+        <h3 style="margin-top:0">Zahlung</h3>
+        <div class="detail-row"><span>Status</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
+        <div class="detail-row"><span>Betrag</span><b>${o.finalPrice?eur(o.finalPrice):"Noch kein Endpreis"}</b></div>
+        <div class="detail-row"><span>Bezahlt am</span><b>${o.paidAt||"—"}</b></div>
+        <label class="inline-note" style="display:block;margin-top:10px">Zahlungsstatus</label>
+        <select class="field" id="paymentStatusInput" style="width:100%;margin-top:7px">
+          ${["Nicht berechnet","Zahlung offen","Bezahlt","Storniert"].map(s=>`<option ${s===o.paymentStatus?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <label class="inline-note" style="display:block;margin-top:10px">Notiz</label>
+        <input class="field" id="invoiceNoteInput" value="${o.invoiceNote||""}" placeholder="z. B. PayPal / Überweisung / Bar" style="width:100%;margin-top:7px">
+        <button class="primary-btn" style="margin-top:10px;width:100%" onclick="savePaymentStatus('${o.id}')">Zahlung speichern</button>
+      </div>
     </div>
     <div class="detail-card" style="margin-top:14px">
       <h3 style="margin-top:0">Kundenvorschau & Freigabe</h3>
@@ -411,7 +438,24 @@ window.saveOrderPreview=async function(id){
   showToast("Kundenvorschau gespeichert.");
 };
 
-window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
+window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;if(o.paymentStatus==="Nicht berechnet")o.paymentStatus="Zahlung offen";state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
+
+window.savePaymentStatus=function(id){
+  const o=state.orders.find(x=>x.id===id);
+  const newStatus=document.getElementById("paymentStatusInput").value;
+  const note=document.getElementById("invoiceNoteInput").value.trim();
+  const previous=o.paymentStatus;
+  o.paymentStatus=newStatus;
+  o.invoiceNote=note;
+  if(newStatus==="Bezahlt" && previous!=="Bezahlt"){
+    o.paidAt=new Date().toLocaleDateString("de-DE");
+    const c=state.customers.find(c=>c.name===o.client);
+    if(c && o.finalPrice) c.revenue=Number(c.revenue||0)+Number(o.finalPrice);
+  }
+  if(newStatus!=="Bezahlt") o.paidAt="";
+  state.logs.unshift(`${id}: Zahlungsstatus auf "${newStatus}" gesetzt`);
+  save();closeModal();render("orders");showToast("Zahlungsstatus gespeichert.");
+};
 
 window.openClothingModal=function(){modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div><div class="form-group"><label>Kunde</label><input name="customer" required></div><div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});save();closeModal();render("clothing");showToast("Design gespeichert.")}}
 window.openCustomerModal=function(){modal(formTemplate("Neuen Kunden anlegen","Kundenakte für Bestellungen und Support.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Discord</label><input name="discord"></div><div class="form-group full"><label>Organisation / Fraktion / Unternehmen</label><input name="organization" placeholder="Privat"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.unshift({name:f.name,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});save();closeModal();render("customers");showToast("Kunde angelegt.")}}

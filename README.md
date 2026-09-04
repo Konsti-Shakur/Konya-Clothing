@@ -1,14 +1,20 @@
-# Konya Clothing V3.2 – Vorschau & Kundenfreigabe
+# Konya Clothing V3.3 – Zahlungsstatus
 
-Neu in V3.2:
-- Admin/Designer kann in einem Auftrag eine Kundenvorschau hochladen
-- automatische Vorschau-Versionen (Version 1, Version 2, ...)
-- Auftrag wechselt auf „Kundenvorschau“
-- Kunde kann die Vorschau freigeben
-- Kunde kann einen konkreten Änderungswunsch senden
-- Änderungswunsch wird direkt beim Auftrag angezeigt
-- Freigaben und Änderungswünsche werden im Protokoll gespeichert
+In dieser Version wurden genau 5 Punkte ergänzt:
 
-Wichtig:
-Wie V3.1 ist dies noch die browserlokale Zwischenversion mit localStorage.
-Ein echtes Kundenkonto und serverweiter Upload folgen später mit Backend/Datenbank.
+1. Zahlungsstatus pro Auftrag:
+   - Nicht berechnet
+   - Zahlung offen
+   - Bezahlt
+   - Storniert
+
+2. Endpreis und Zahlungsstatus sind direkt im Auftrag sichtbar.
+
+3. Bei „Bezahlt“ wird automatisch ein Zahlungsdatum gesetzt.
+
+4. Das Dashboard zeigt offene Zahlungen als eigenen KPI / Hinweis.
+
+5. Zahlungsänderungen werden im Protokoll gespeichert und bezahlte Beträge dem Kundenumsatz zugerechnet.
+
+Hinweis:
+Die Daten werden weiterhin lokal im Browser gespeichert. Für echten Mehrbenutzerbetrieb folgt später Backend + Datenbank.

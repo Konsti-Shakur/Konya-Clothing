@@ -359,3 +359,16 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
 }
 .change-request-box strong{font-size:12px}
 .change-request-box p{margin:7px 0 0;color:#d8c7a6;font-size:12px;line-height:1.5}
+
+.payment-summary{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.payment-badge{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px 12px;
+  background:#0a1012;
+  font-size:12px;
+}
