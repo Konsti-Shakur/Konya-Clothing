@@ -15,3 +15,8 @@ Diese Version ist auf allgemeine Clothing-Aufträge ausgerichtet, nicht auf Frak
 ## Hinweis
 Die aktuelle Version speichert Daten noch lokal im Browser (`localStorage`).
 Für echten Mehrbenutzerbetrieb auf Railway ist als nächster Schritt ein Backend + PostgreSQL nötig.
+
+
+## Branding Update
+- Konya Clothing Logo eingebaut
+- Konya Clothing Banner auf der öffentlichen Startseite eingebaut

@@ -123,26 +123,48 @@ function logs(){
 }
 
 function publicView(){
-  title.textContent="Öffentliche Seite"; subtitle.textContent="So könnte die allgemeine Clothing-Seite aussehen.";
+  title.textContent="Öffentliche Seite"; subtitle.textContent="Konya Clothing – öffentliche Marken- und Auftragsseite.";
   root.innerHTML=`
-  <div class="hero-public">
-    <div><div class="eyebrow">CUSTOM FIVEM CLOTHING</div><h2>Deine Idee.<br>Dein Style.<br>Dein Clothing.</h2>
-    <p>Konya Clothing erstellt individuelle FiveM-Kleidung für einzelne Spieler, Crews, Unternehmen und Fraktionen. Vom kleinen Logo-Fix bis zum kompletten Outfit.</p>
-    <div style="margin-top:22px"><button class="primary-btn" onclick="openPublicOrderModal()">Auftrag anfragen</button> <button class="secondary-btn" onclick="render('showcase')">Showcase ansehen</button></div></div>
-    <img src="assets/konya-logo.png" class="hero-logo" alt="Konya Clothing">
+  <div class="brand-banner">
+    <img src="assets/konya-banner.png" alt="Konya Clothing Banner">
   </div>
+
+  <div class="hero-public">
+    <div>
+      <div class="hero-brand-row">
+        <img src="assets/konya-logo.png" class="brand-logo-inline" alt="Konya Clothing Logo">
+        <div class="brand-copy">
+          <strong>KONYA</strong>
+          <span>CLOTHING</span>
+        </div>
+      </div>
+      <div class="eyebrow">CUSTOM FIVEM CLOTHING</div>
+      <h2>Deine Idee.<br>Dein Style.<br>Dein Clothing.</h2>
+      <p>Konya Clothing erstellt individuelle FiveM-Kleidung für einzelne Spieler, Crews, Unternehmen und Fraktionen. Vom kleinen Logo-Fix bis zum kompletten Outfit.</p>
+      <div style="margin-top:22px">
+        <button class="primary-btn" onclick="openPublicOrderModal()">Auftrag anfragen</button>
+        <button class="secondary-btn" onclick="render('showcase')">Showcase ansehen</button>
+      </div>
+    </div>
+    <img src="assets/konya-logo.png" class="hero-logo" alt="Konya Clothing Logo">
+  </div>
+
   <div class="service-grid">
     <div class="service-card"><b>Custom Clothing</b><span>Hoodies, Shirts, Hosen, Westen und komplette Sets.</span></div>
     <div class="service-card"><b>Texture Fix</b><span>Unscharfe, verpixelte oder fehlerhafte Texturen überarbeiten.</span></div>
     <div class="service-card"><b>Branding</b><span>Logos, Schriftzüge und Muster sauber auf Clothing platzieren.</span></div>
     <div class="service-card"><b>Komplettpakete</b><span>Einheitliche Kollektionen für Gruppen oder Projekte.</span></div>
   </div>
-  <div class="panel" style="margin-top:18px"><div class="panel-head"><h3>Beliebte Leistungen</h3><span>Beispielpreise</span></div><div class="panel-body price-grid">
-    <div class="price-card"><h3>Texture Fix</h3><p>Schärfen, Kanten, Logo-Anpassung</p><div class="price">ab 25.000 $</div></div>
-    <div class="price-card"><h3>Einzelteil</h3><p>Hoodie, Hose, Shirt oder Weste</p><div class="price">ab 45.000 $</div></div>
-    <div class="price-card"><h3>Outfit</h3><p>Mehrere Kleidungsstücke im selben Stil</p><div class="price">ab 95.000 $</div></div>
-    <div class="price-card"><h3>Custom Pack</h3><p>Größeres Paket nach Absprache</p><div class="price">Anfrage</div></div>
-  </div></div>`;
+
+  <div class="panel" style="margin-top:18px">
+    <div class="panel-head"><h3>Beliebte Leistungen</h3><span>Beispielpreise</span></div>
+    <div class="panel-body price-grid">
+      <div class="price-card"><h3>Texture Fix</h3><p>Schärfen, Kanten, Logo-Anpassung</p><div class="price">ab 25.000 $</div></div>
+      <div class="price-card"><h3>Einzelteil</h3><p>Hoodie, Hose, Shirt oder Weste</p><div class="price">ab 45.000 $</div></div>
+      <div class="price-card"><h3>Outfit</h3><p>Mehrere Kleidungsstücke im selben Stil</p><div class="price">ab 95.000 $</div></div>
+      <div class="price-card"><h3>Custom Pack</h3><p>Größeres Paket nach Absprache</p><div class="price">Anfrage</div></div>
+    </div>
+  </div>`;
 }
 
 function customerArea(){
