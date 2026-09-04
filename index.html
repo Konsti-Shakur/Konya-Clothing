@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konya Clothing — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/konya-logo.png" alt="Konya Clothing Logo" class="brand-logo" />
+        <div>
+          <div class="brand-title">KONYA</div>
+          <div class="brand-subtitle">CLOTHING</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">◫ <span>Übersicht</span></button>
+        <button class="nav-item" data-view="clothing">◈ <span>Clothing</span></button>
+        <button class="nav-item" data-view="orders">▣ <span>Aufträge</span><span class="count-badge" id="ordersBadge">3</span></button>
+        <button class="nav-item" data-view="categories">▦ <span>Kategorien</span></button>
+        <button class="nav-item" data-view="customers">◉ <span>Kunden</span></button>
+        <button class="nav-item" data-view="showcase">◇ <span>Showcase</span></button>
+        <button class="nav-item" data-view="tickets">□ <span>Tickets</span><span class="count-badge danger" id="ticketsBadge">1</span></button>
+        <button class="nav-item" data-view="employees">♙ <span>Mitarbeiter</span></button>
+        <button class="nav-item" data-view="logs">⌁ <span>Protokoll</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="sidebar-link" data-view="public">↗ <span>Öffentliche Seite</span></button>
+        <button class="sidebar-link" data-view="customer">◎ <span>Kundenbereich</span></button>
+        <button class="sidebar-link" id="backupBtn">⛁ <span>Datensicherung</span></button>
+        <div class="user-box">
+          <div class="avatar">KS</div>
+          <div>
+            <strong>Konsti Shakur</strong>
+            <small>Inhaber / Admin</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">ADMINBEREICH</div>
+          <h1 id="pageTitle">Übersicht</h1>
+          <p id="pageSubtitle">Alles Wichtige zu Konya Clothing auf einen Blick.</p>
+        </div>
+        <div class="top-actions">
+          <div class="global-search">
+            <span>⌕</span>
+            <input id="globalSearch" placeholder="Suche nach Auftrag, Fraktion, Kunde ..." />
+          </div>
+          <button class="icon-btn" id="notifyBtn">♢<span class="dot" id="notifyDot"></span></button>
+          <button class="primary-btn" id="quickAdd">+ Neu</button>
+        </div>
+      </header>
+
+      <section id="viewRoot"></section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
