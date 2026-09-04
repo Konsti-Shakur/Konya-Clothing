@@ -1,13 +1,14 @@
-# Konya Clothing V3.1 – Datei- & Logo-Upload
+# Konya Clothing V3.2 – Vorschau & Kundenfreigabe
 
-Neu in V3.1:
-- Kunden können bei einer Auftragsanfrage Referenzbilder, Logos und kleine Dateien hochladen
-- Admin kann beim manuellen Auftrag ebenfalls Dateien anhängen
-- Dateien werden direkt in der Auftragsdetailansicht angezeigt
-- Bilder erhalten eine Vorschau
-- Dateien können aus dem Auftrag heruntergeladen werden
-- bis zu 6 Dateien, maximal 2 MB pro Datei
+Neu in V3.2:
+- Admin/Designer kann in einem Auftrag eine Kundenvorschau hochladen
+- automatische Vorschau-Versionen (Version 1, Version 2, ...)
+- Auftrag wechselt auf „Kundenvorschau“
+- Kunde kann die Vorschau freigeben
+- Kunde kann einen konkreten Änderungswunsch senden
+- Änderungswunsch wird direkt beim Auftrag angezeigt
+- Freigaben und Änderungswünsche werden im Protokoll gespeichert
 
-Hinweis:
-Die Seite nutzt aktuell weiterhin localStorage. Deshalb ist der Upload für diese Zwischenversion browserlokal.
-Für echten produktiven Upload auf Railway benötigen wir später Server-Speicher bzw. Object Storage + Datenbank.
+Wichtig:
+Wie V3.1 ist dies noch die browserlokale Zwischenversion mit localStorage.
+Ein echtes Kundenkonto und serverweiter Upload folgen später mit Backend/Datenbank.

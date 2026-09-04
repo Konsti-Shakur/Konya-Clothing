@@ -108,6 +108,18 @@ function attachmentHtml(a){
     </div>
   </div>`;
 }
+function previewBlock(o){
+  const p=o.preview;
+  if(!p) return `<div class="preview-empty">Noch keine Kundenvorschau hochgeladen.</div>`;
+  const isImg=(p.type||"").startsWith("image/");
+  return `<div class="customer-preview-card">
+    <div class="customer-preview-image">${isImg?`<img src="${p.data}" alt="${p.name}">`:"<span>▧</span>"}</div>
+    <div class="customer-preview-meta">
+      <b>${p.name}</b>
+      <span>Version ${o.previewVersion||1} · ${o.approvalStatus||"Wartet auf Kunde"}</span>
+    </div>
+  </div>`;
+}
 const root = document.getElementById("viewRoot");
 const title = document.getElementById("pageTitle");
 const subtitle = document.getElementById("pageSubtitle");
@@ -214,10 +226,10 @@ function publicView(){
 }
 
 function customerArea(){
-  title.textContent="Kundenbereich"; subtitle.textContent="Auftragsstatus, Preisangebot, Vorschau und Änderungen.";
+  title.textContent="Kundenbereich"; subtitle.textContent="Auftragsstatus, Preisangebot, Vorschau und Freigabe.";
   const o=state.orders[0];
   root.innerHTML=`<div class="customer-hero"><div class="eyebrow">MEIN AUFTRAG</div><h2 style="margin:0">${o.id} · ${o.type}</h2><p style="color:var(--muted)">${o.client} · ${o.organization}</p>
-  <div class="step-row">${["Anfrage","Preisangebot","Angenommen","In Bearbeitung","Vorschau","Ausgeliefert"].map((s,i)=>`<div class="step ${i<=3?"active":""}">${s}</div>`).join("")}</div></div>
+  <div class="step-row">${["Anfrage","Preisangebot","Angenommen","In Bearbeitung","Vorschau","Ausgeliefert"].map((s,i)=>`<div class="step ${i<=4?"active":""}">${s}</div>`).join("")}</div></div>
   <div class="order-detail-grid" style="margin-top:18px">
     <div class="detail-card"><h3>Auftragsdetails</h3>
       <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
@@ -228,11 +240,47 @@ function customerArea(){
       <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
       <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
     </div>
-    <div class="detail-card"><h3>Kundenvorschau</h3><div class="showcase-preview" style="border-radius:10px">◇</div>
-      <div style="display:flex;gap:8px;margin-top:12px"><button class="primary-btn" onclick="showToast('Design freigegeben.')">Freigeben</button><button class="secondary-btn" onclick="showToast('Änderungswunsch erfasst.')">Änderung wünschen</button></div>
+    <div class="detail-card"><h3>Kundenvorschau</h3>
+      ${previewBlock(o)}
+      ${o.preview && o.approvalStatus!=="Freigegeben"?`
+        <div class="approval-actions">
+          <button class="primary-btn" onclick="approvePreview('${o.id}')">✓ Design freigeben</button>
+          <button class="secondary-btn" onclick="openChangeRequest('${o.id}')">✎ Änderung wünschen</button>
+        </div>`:""}
+      ${o.approvalStatus==="Freigegeben"?`<div class="approval-success">✓ Diese Vorschau wurde freigegeben.</div>`:""}
+      ${o.changeRequest?`<div class="change-request-box"><strong>Dein Änderungswunsch</strong><p>${o.changeRequest}</p></div>`:""}
     </div>
   </div>`;
 }
+
+window.approvePreview=function(id){
+  const o=state.orders.find(x=>x.id===id);
+  if(!o||!o.preview) return;
+  o.approvalStatus="Freigegeben";
+  o.status="Freigegeben";
+  o.progress=95;
+  o.changeRequest="";
+  state.logs.unshift(`${id}: Kunde hat Vorschau Version ${o.previewVersion||1} freigegeben`);
+  save();render("customer");showToast("Vorschau wurde freigegeben.");
+};
+
+window.openChangeRequest=function(id){
+  const o=state.orders.find(x=>x.id===id);
+  modal(`<h2>Änderung wünschen</h2><p>Beschreibe möglichst genau, was an der aktuellen Vorschau geändert werden soll.</p>
+    <form id="changeRequestForm">
+      <div class="form-group"><label>Änderungswunsch</label><textarea id="changeRequestText" required placeholder="z. B. Logo kleiner, Farbe dunkler, Schrift weiter nach oben ..."></textarea></div>
+      <div class="form-actions"><button type="button" class="secondary-btn" onclick="closeModal()">Abbrechen</button><button class="primary-btn">Änderung senden</button></div>
+    </form>`);
+  document.getElementById("changeRequestForm").onsubmit=e=>{
+    e.preventDefault();
+    const text=document.getElementById("changeRequestText").value.trim();
+    o.changeRequest=text;
+    o.approvalStatus="Änderung gewünscht";
+    o.status="Änderung gewünscht";
+    state.logs.unshift(`${id}: Kunde hat einen Änderungswunsch gesendet`);
+    save();closeModal();render("customer");showToast("Änderungswunsch wurde gesendet.");
+  };
+};
 
 function logs(){
   title.textContent="Protokoll"; subtitle.textContent="Nachvollziehbar, wer was geändert hat.";
@@ -328,11 +376,41 @@ window.openOrderDetail=function(id){
       </div>
     </div>
     <div class="detail-card" style="margin-top:14px">
+      <h3 style="margin-top:0">Kundenvorschau & Freigabe</h3>
+      ${previewBlock(o)}
+      <div class="upload-zone" style="margin-top:12px">
+        <label>Neue Vorschau hochladen</label>
+        <input id="previewFileInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.pdf">
+        <div class="upload-hint">Eine neue Vorschau erhöht automatisch die Versionsnummer und setzt den Status auf „Wartet auf Kunde“.</div>
+        <button class="primary-btn" style="margin-top:10px" onclick="saveOrderPreview('${o.id}')">Vorschau speichern</button>
+      </div>
+      ${o.changeRequest?`<div class="change-request-box"><strong>Änderungswunsch des Kunden</strong><p>${o.changeRequest}</p></div>`:""}
+    </div>
+    <div class="detail-card" style="margin-top:14px">
       <h3 style="margin-top:0">Dateien & Referenzen</h3>
       <p class="inline-note">${files.length?`${files.length} Datei(en) wurden dem Auftrag beigefügt.`:"Noch keine Dateien hochgeladen."}</p>
       ${files.length?`<div class="attachment-grid">${files.map(attachmentHtml).join("")}</div>`:""}
     </div>`);
 }
+window.saveOrderPreview=async function(id){
+  const o=state.orders.find(x=>x.id===id);
+  const input=document.getElementById("previewFileInput");
+  if(!input.files.length){showToast("Bitte zuerst eine Vorschau auswählen.");return;}
+  const attachments=await filesToAttachments(input.files);
+  if(!attachments.length){showToast("Datei ist zu groß oder nicht gültig.");return;}
+  o.preview=attachments[0];
+  o.previewVersion=(o.previewVersion||0)+1;
+  o.approvalStatus="Wartet auf Kunde";
+  o.changeRequest="";
+  o.status="Kundenvorschau";
+  o.progress=Math.max(o.progress||0,80);
+  state.logs.unshift(`${id}: Kundenvorschau Version ${o.previewVersion} hochgeladen`);
+  save();
+  closeModal();
+  render("orders");
+  showToast("Kundenvorschau gespeichert.");
+};
+
 window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
 
 window.openClothingModal=function(){modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div><div class="form-group"><label>Kunde</label><input name="customer" required></div><div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});save();closeModal();render("clothing");showToast("Design gespeichert.")}}
