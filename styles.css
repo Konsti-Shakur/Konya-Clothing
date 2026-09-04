@@ -372,3 +372,10 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
   background:#0a1012;
   font-size:12px;
 }
+
+.notification-settings{display:grid;gap:0}
+.notification-setting{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.notification-setting:last-child{border-bottom:0}
+.notification-setting b{display:block;font-size:13px}
+.notification-setting span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.notification-setting input{width:19px;height:19px;accent-color:#25d8d4}

@@ -77,6 +77,13 @@ const seed = {
 
 let state = JSON.parse(localStorage.getItem("konyaAdminStateV3") || "null") || seed;
 if(!state.pricing) state.pricing = defaultPricing;
+if(!state.notificationSettings) state.notificationSettings={
+  newOrder:true,
+  urgentTicket:true,
+  previewApproved:true,
+  changeRequested:true,
+  paymentReceived:true
+};
 state.orders.forEach(o=>{
   if(!o.paymentStatus) o.paymentStatus = o.finalPrice ? "Zahlung offen" : "Nicht berechnet";
   if(o.paidAt===undefined) o.paidAt = "";
@@ -149,6 +156,21 @@ function paymentClass(s){
   if(s==="Storniert") return "danger";
   return "new";
 }
+function addNotification(message,type="system"){
+  const map={
+    newOrder:"newOrder",
+    urgentTicket:"urgentTicket",
+    previewApproved:"previewApproved",
+    changeRequested:"changeRequested",
+    paymentReceived:"paymentReceived",
+    system:"system"
+  };
+  const setting=map[type];
+  if(setting!=="system" && state.notificationSettings && state.notificationSettings[setting]===false) return;
+  state.notifications.unshift(message);
+  state.notifications=state.notifications.slice(0,30);
+}
+
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
 function kpi(label,val,foot,cls=""){return `<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-foot">${foot}</div></div>`}
 
@@ -274,7 +296,7 @@ window.approvePreview=function(id){
   o.status="Freigegeben";
   o.progress=95;
   o.changeRequest="";
-  state.logs.unshift(`${id}: Kunde hat Vorschau Version ${o.previewVersion||1} freigegeben`);
+  state.logs.unshift(`${id}: Kunde hat Vorschau Version ${o.previewVersion||1} freigegeben`);addNotification(`${id}: Kunde hat die Vorschau freigegeben.`,"previewApproved");
   save();render("customer");showToast("Vorschau wurde freigegeben.");
 };
 
@@ -291,10 +313,30 @@ window.openChangeRequest=function(id){
     o.changeRequest=text;
     o.approvalStatus="Änderung gewünscht";
     o.status="Änderung gewünscht";
-    state.logs.unshift(`${id}: Kunde hat einen Änderungswunsch gesendet`);
+    state.logs.unshift(`${id}: Kunde hat einen Änderungswunsch gesendet`);addNotification(`${id}: Neuer Änderungswunsch vom Kunden.`,"changeRequested");
     save();closeModal();render("customer");showToast("Änderungswunsch wurde gesendet.");
   };
 };
+
+function notificationsView(){
+  title.textContent="Benachrichtigungen";
+  subtitle.textContent="Festlegen, bei welchen wichtigen Ereignissen eine Meldung erstellt wird.";
+  const s=state.notificationSettings;
+  const rows=[
+    ["newOrder","Neue Aufträge","Meldung, wenn eine neue Kundenanfrage eingeht."],
+    ["urgentTicket","Dringende Tickets","Meldung bei einem neuen dringenden Support-Ticket."],
+    ["previewApproved","Kundenfreigabe","Meldung, wenn ein Kunde eine Vorschau freigibt."],
+    ["changeRequested","Änderungswunsch","Meldung, wenn ein Kunde Änderungen anfordert."],
+    ["paymentReceived","Zahlung erhalten","Meldung, sobald ein Auftrag als bezahlt markiert wird."]
+  ];
+  root.innerHTML=`<div class="panel"><div class="panel-head"><h3>Interne Meldungen</h3><span>V3.4</span></div><div class="panel-body notification-settings">
+    ${rows.map(([key,name,desc])=>`<label class="notification-setting"><div><b>${name}</b><span>${desc}</span></div><input type="checkbox" ${s[key]?"checked":""} onchange="toggleNotificationSetting('${key}',this.checked)"></label>`).join("")}
+  </div></div>
+  <div class="panel" style="margin-top:14px"><div class="panel-head"><h3>Letzte Meldungen</h3><span>${state.notifications.length}</span></div><div class="panel-body attention-list">
+  ${state.notifications.slice(0,10).map(n=>`<div class="attention-item"><div class="attention-icon">◉</div><div><strong>${n}</strong><small>Konya Clothing</small></div></div>`).join("")}
+  </div></div>`;
+}
+window.toggleNotificationSetting=function(key,val){state.notificationSettings[key]=val;save();showToast(val?"Benachrichtigung aktiviert.":"Benachrichtigung deaktiviert.");};
 
 function logs(){
   title.textContent="Protokoll"; subtitle.textContent="Nachvollziehbar, wer was geändert hat.";
@@ -309,6 +351,7 @@ function render(view){
   else if(view==="categories") categories();
   else if(view==="showcase") showcase();
   else if(view==="logs") logs();
+  else if(view==="notifications") notificationsView();
   else if(view==="public") publicView();
   else if(view==="customer") customerArea();
 }
@@ -365,7 +408,7 @@ window.openPublicOrderModal=function(){
     const attachments=await filesToAttachments(document.getElementById("publicFiles").files);
     state.customers.push({name:f.client,discord:f.discord,organization:f.organization||"Privat",orders:1,revenue:0,status:"Neu"});
     state.orders.unshift({id:`KC-2026-${String(50+state.orders.length).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:"Noch nicht zugewiesen",priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:"Offen",status:"Anfrage",progress:0,priority:"Normal",description:f.description,attachments});
-    state.logs.unshift(`Neue Kundenanfrage von ${f.client} (${attachments.length} Datei(en))`);
+    state.logs.unshift(`Neue Kundenanfrage von ${f.client} (${attachments.length} Datei(en))`);addNotification(`Neue Bestellung von ${f.client}: ${f.type}`,"newOrder");
     save();closeModal();showToast("Anfrage wurde gesendet.");
   };
 }
@@ -449,6 +492,7 @@ window.savePaymentStatus=function(id){
   o.invoiceNote=note;
   if(newStatus==="Bezahlt" && previous!=="Bezahlt"){
     o.paidAt=new Date().toLocaleDateString("de-DE");
+    addNotification(`${id}: Zahlung über ${o.finalPrice?eur(o.finalPrice):"den Auftrag"} erhalten.`,"paymentReceived");
     const c=state.customers.find(c=>c.name===o.client);
     if(c && o.finalPrice) c.revenue=Number(c.revenue||0)+Number(o.finalPrice);
   }
@@ -459,7 +503,7 @@ window.savePaymentStatus=function(id){
 
 window.openClothingModal=function(){modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div><div class="form-group"><label>Kunde</label><input name="customer" required></div><div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});save();closeModal();render("clothing");showToast("Design gespeichert.")}}
 window.openCustomerModal=function(){modal(formTemplate("Neuen Kunden anlegen","Kundenakte für Bestellungen und Support.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Discord</label><input name="discord"></div><div class="form-group full"><label>Organisation / Fraktion / Unternehmen</label><input name="organization" placeholder="Privat"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.unshift({name:f.name,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});save();closeModal();render("customers");showToast("Kunde angelegt.")}}
-window.openTicketModal=function(){modal(formTemplate("Neues Ticket","Support oder Änderungswunsch erfassen.",`<div class="form-group"><label>Betreff</label><input name="title" required></div><div class="form-group"><label>Kunde</label><input name="client" required></div><div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div><div class="form-group"><label>Zuständig</label><input name="assigned" value="Konsti Shakur"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.tickets.unshift({id:"#"+(129+state.tickets.length),title:f.title,client:f.client,priority:f.priority,status:"Offen",assigned:f.assigned});save();closeModal();render("tickets");showToast("Ticket angelegt.")}}
+window.openTicketModal=function(){modal(formTemplate("Neues Ticket","Support oder Änderungswunsch erfassen.",`<div class="form-group"><label>Betreff</label><input name="title" required></div><div class="form-group"><label>Kunde</label><input name="client" required></div><div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div><div class="form-group"><label>Zuständig</label><input name="assigned" value="Konsti Shakur"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.tickets.unshift({id:"#"+(129+state.tickets.length),title:f.title,client:f.client,priority:f.priority,status:"Offen",assigned:f.assigned});if(f.priority==="Dringend")addNotification(`Dringendes Ticket von ${f.client}: ${f.title}`,"urgentTicket");save();closeModal();render("tickets");showToast("Ticket angelegt.")}}
 window.openEmployeeModal=function(){modal(formTemplate("Mitarbeiter hinzufügen","Rolle und Rechte zuweisen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Rolle</label><select name="role"><option>Admin</option><option>Designer</option><option>Support</option><option>Buchhaltung</option></select></div><div class="form-group full"><label>Berechtigungen</label><input name="permissions" value="Clothing, Aufträge"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.employees.push({...f,active:true});save();closeModal();render("employees");showToast("Mitarbeiter hinzugefügt.")}}
 window.openCategoryModal=function(){modal(formTemplate("Kategorie hinzufügen","Neue Clothing-Kategorie anlegen.",`<div class="form-group full"><label>Name</label><input name="name" required></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.categories.push(f.name);save();closeModal();render("categories");showToast("Kategorie hinzugefügt.")}}
 window.deleteCategory=function(i){if(confirm("Kategorie wirklich löschen?")){state.categories.splice(i,1);save();render("categories")}}
@@ -471,7 +515,10 @@ document.getElementById("globalSearch").addEventListener("keydown",e=>{
   if(e.key==="Enter"){const q=e.target.value.toLowerCase();const found=[...state.orders.map(x=>({type:"Auftrag",label:`${x.id} — ${x.client}`})),...state.customers.map(x=>({type:"Kunde",label:x.name})),...state.clothing.map(x=>({type:"Design",label:x.name}))].filter(x=>x.label.toLowerCase().includes(q));modal(`<h2>Suchergebnisse</h2><p>${found.length} Treffer</p><div class="attention-list">${found.length?found.map(x=>`<div class="attention-item"><div class="attention-icon">⌕</div><div><strong>${x.label}</strong><small>${x.type}</small></div></div>`).join(""):'<div class="empty">Keine Treffer gefunden.</div>'}</div>`)}}
 );
 
-const notify=document.createElement("div");notify.className="notification-menu hidden";notify.id="notificationMenu";notify.innerHTML=state.notifications.map(n=>`<div class="notification-item"><b>${n}</b><span>Gerade eben</span></div>`).join("");document.body.appendChild(notify);
-document.getElementById("notifyBtn").onclick=()=>{notify.classList.toggle("hidden");document.getElementById("notifyDot").style.display="none"};
+const notify=document.createElement("div");notify.className="notification-menu hidden";notify.id="notificationMenu";document.body.appendChild(notify);
+document.getElementById("notifyBtn").onclick=()=>{
+  notify.innerHTML=state.notifications.slice(0,15).map(n=>`<div class="notification-item"><b>${n}</b><span>Konya Clothing</span></div>`).join("") || `<div class="notification-item"><b>Keine Meldungen</b></div>`;
+  notify.classList.toggle("hidden");document.getElementById("notifyDot").style.display="none";
+};
 
 render("dashboard");

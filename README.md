@@ -1,20 +1,10 @@
-# Konya Clothing V3.3 – Zahlungsstatus
+# Konya Clothing V3.4 – Benachrichtigungen
 
-In dieser Version wurden genau 5 Punkte ergänzt:
+Die nächsten 5 Schritte:
+1. Meldung bei neuen Kundenaufträgen.
+2. Meldung bei dringenden Tickets.
+3. Meldung bei Kundenfreigaben und Änderungswünschen.
+4. Meldung bei eingegangenen Zahlungen.
+5. Eigener Adminbereich zum Ein-/Ausschalten der Benachrichtigungstypen.
 
-1. Zahlungsstatus pro Auftrag:
-   - Nicht berechnet
-   - Zahlung offen
-   - Bezahlt
-   - Storniert
-
-2. Endpreis und Zahlungsstatus sind direkt im Auftrag sichtbar.
-
-3. Bei „Bezahlt“ wird automatisch ein Zahlungsdatum gesetzt.
-
-4. Das Dashboard zeigt offene Zahlungen als eigenen KPI / Hinweis.
-
-5. Zahlungsänderungen werden im Protokoll gespeichert und bezahlte Beträge dem Kundenumsatz zugerechnet.
-
-Hinweis:
-Die Daten werden weiterhin lokal im Browser gespeichert. Für echten Mehrbenutzerbetrieb folgt später Backend + Datenbank.
+Diese V3.4 verwendet interne Website-Benachrichtigungen. Discord-Webhooks werden erst mit dem echten Backend umgesetzt, damit kein geheimer Webhook öffentlich im Browser-Code liegt.
