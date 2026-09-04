@@ -1,8 +1,39 @@
+const defaultPricing = [
+  {group:"Einzelteile", icon:"👕", items:[
+    {name:"T-Shirt / Top", min:5, max:8},
+    {name:"Hoodie / Pullover", min:8, max:12},
+    {name:"Jacke / Mantel", min:12, max:18},
+    {name:"Hose / Jeans", min:8, max:12},
+    {name:"Schuhe", min:10, max:15},
+    {name:"Cap / Mütze / Hut", min:5, max:7},
+    {name:"Accessoires", min:5, max:10}
+  ]},
+  {group:"Outfit-Pakete", icon:"👗", items:[
+    {name:"Business / Elegant", min:25, max:35},
+    {name:"Event-Outfit", min:30, max:45},
+    {name:"Individuelles Custom-Outfit", min:40, max:70}
+  ]},
+  {group:"Fraktions- & Spezialkleidung", icon:"🚓", items:[
+    {name:"Fraktions-Outfit", min:30, max:50},
+    {name:"Gang-Outfit", min:25, max:40},
+    {name:"Einsatzkleidung", min:45, max:80}
+  ]},
+  {group:"Zusatzleistungen", icon:"⚙️", items:[
+    {name:"Kleine Änderungen", min:5, max:10},
+    {name:"Umfangreiches Rework", min:15, max:30},
+    {name:"Express-Bearbeitung (48 Stunden)", min:35, max:40, surcharge:true}
+  ]},
+  {group:"Logos", icon:"🖼️", items:[
+    {name:"Individuelles Logo", min:2, max:2, per:"pro Logo"}
+  ]}
+];
+
 const seed = {
+  pricing: defaultPricing,
   orders: [
-    {id:"KC-2026-0042", client:"Max M.", type:"Hoodie + Hose", designer:"Konsti Shakur", price:95000, deadline:"2026-09-07", status:"In Bearbeitung", progress:65, priority:"Hoch", organization:"Black Order"},
-    {id:"KC-2026-0041", client:"Lena S.", type:"Komplettes Outfit", designer:"Mira V.", price:145000, deadline:"2026-09-09", status:"Kundenvorschau", progress:80, priority:"Normal", organization:"Privat"},
-    {id:"KC-2026-0040", client:"Denis K.", type:"Weste", designer:"Konsti Shakur", price:55000, deadline:"2026-09-05", status:"Warten auf Kunde", progress:72, priority:"Hoch", organization:"Bloodline"}
+    {id:"KC-2026-0042", client:"Max M.", type:"Hoodie / Pullover", designer:"Konsti Shakur", priceMin:8, priceMax:12, finalPrice:10, deadline:"2026-09-07", status:"In Bearbeitung", progress:65, priority:"Hoch", organization:"Black Order", description:"Schwarz/Türkis, Logo Brust + Rücken"},
+    {id:"KC-2026-0041", client:"Lena S.", type:"Individuelles Custom-Outfit", designer:"Mira V.", priceMin:40, priceMax:70, finalPrice:55, deadline:"2026-09-09", status:"Kundenvorschau", progress:80, priority:"Normal", organization:"Privat", description:"Elegantes Damen-Outfit mit eigenem Muster"},
+    {id:"KC-2026-0040", client:"Denis K.", type:"Einsatzkleidung", designer:"Konsti Shakur", priceMin:45, priceMax:80, finalPrice:65, deadline:"2026-09-05", status:"Warten auf Kunde", progress:72, priority:"Hoch", organization:"Bloodline", description:"Taktische Weste + passende Hose"}
   ],
   clothing: [
     {name:"Luxury Hoodie", category:"Oberteile", customer:"Max M.", versions:3, status:"Freigegeben"},
@@ -10,9 +41,9 @@ const seed = {
     {name:"Tactical Weste", category:"Westen", customer:"Denis K.", versions:1, status:"In Bearbeitung"}
   ],
   customers: [
-    {name:"Max M.", discord:"maxm", organization:"Black Order", orders:2, revenue:170000, status:"Aktiv"},
-    {name:"Lena S.", discord:"lena.s", organization:"Privat", orders:1, revenue:145000, status:"Aktiv"},
-    {name:"Denis K.", discord:"denis.k", organization:"Bloodline", orders:1, revenue:55000, status:"Aktiv"}
+    {name:"Max M.", discord:"maxm", organization:"Black Order", orders:2, revenue:18, status:"Aktiv"},
+    {name:"Lena S.", discord:"lena.s", organization:"Privat", orders:1, revenue:55, status:"Aktiv"},
+    {name:"Denis K.", discord:"denis.k", organization:"Bloodline", orders:1, revenue:65, status:"Aktiv"}
   ],
   tickets: [
     {id:"#128", title:"Logo auf Hose zu klein", client:"Max M.", priority:"Dringend", status:"Offen", assigned:"Konsti Shakur"},
@@ -33,9 +64,9 @@ const seed = {
   ],
   logs:[
     "KC-2026-0042 wurde auf 65% gesetzt",
+    "Preisangebot für KC-2026-0042 auf 10 € gesetzt",
     "Ticket #128 wurde Konsti Shakur zugewiesen",
-    "Luxury Hoodie — Version 3 als final markiert",
-    "Neuer Kunde Lena S. angelegt"
+    "Luxury Hoodie — Version 3 als final markiert"
   ],
   notifications:[
     "Ticket #128 ist als dringend markiert.",
@@ -44,13 +75,20 @@ const seed = {
   ]
 };
 
-let state = JSON.parse(localStorage.getItem("konyaAdminStateV2") || "null") || seed;
-const save = () => localStorage.setItem("konyaAdminStateV2", JSON.stringify(state));
+let state = JSON.parse(localStorage.getItem("konyaAdminStateV3") || "null") || seed;
+if(!state.pricing) state.pricing = defaultPricing;
+const save = () => localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
 const root = document.getElementById("viewRoot");
 const title = document.getElementById("pageTitle");
 const subtitle = document.getElementById("pageSubtitle");
 
-function money(n){ return new Intl.NumberFormat("de-DE").format(n)+" $"; }
+function eur(n){ return `${Number(n).toFixed(Number(n)%1?2:0).replace(".",",")} €`; }
+function priceRange(item){
+  if(item.min===item.max) return `${eur(item.min)}${item.per?` ${item.per}`:""}`;
+  return `${eur(item.min)} – ${eur(item.max)}${item.surcharge?" Aufpreis":""}`;
+}
+function allServices(){ return state.pricing.flatMap(g=>g.items.map(i=>({...i,group:g.group}))); }
+function findService(name){ return allServices().find(i=>i.name===name); }
 function statusClass(s){
   if(/fertig|freigegeben|ausgeliefert|aktiv/i.test(s)) return "done";
   if(/warten|vorschau/i.test(s)) return "wait";
@@ -70,32 +108,26 @@ function dashboard(){
       ${kpi("Designs",state.clothing.length,"Gesamt im System")}
       ${kpi("Kunden",state.customers.length,"Aktive Kunden")}
       ${kpi("Offene Aufträge",state.orders.length,"Aktuell in Arbeit")}
-      ${kpi("Offene Tickets",openTickets,"Support & Änderungen",openTickets>2?"warn":"")}
+      ${kpi("Offene Tickets",openTickets,"Support & Änderungen")}
       ${kpi("Dringend",urgent,"Benötigt Aufmerksamkeit",urgent?"alert":"")}
     </div>
     <div class="grid two-col">
       <div class="panel"><div class="panel-head"><h3>Offene Aufträge</h3><span>${state.orders.length} aktuell</span></div><div class="panel-body table-wrap">
-      <table><thead><tr><th>Auftrag</th><th>Kunde</th><th>Typ</th><th>Status</th><th>Fortschritt</th><th>Deadline</th></tr></thead>
-      <tbody>${state.orders.map(o=>`<tr><td><b>${o.id}</b></td><td>${o.client}</td><td>${o.type}</td><td><span class="status ${statusClass(o.status)}">${o.status}</span></td><td><div class="progress"><span style="width:${o.progress}%"></span></div></td><td>${o.deadline}</td></tr>`).join("")}</tbody></table></div></div>
+      <table><thead><tr><th>Auftrag</th><th>Kunde</th><th>Leistung</th><th>Preis</th><th>Status</th><th>Fortschritt</th></tr></thead>
+      <tbody>${state.orders.map(o=>`<tr onclick="openOrderDetail('${o.id}')" style="cursor:pointer"><td><b>${o.id}</b></td><td>${o.client}</td><td>${o.type}</td><td>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</td><td><span class="status ${statusClass(o.status)}">${o.status}</span></td><td><div class="progress"><span style="width:${o.progress}%"></span></div></td></tr>`).join("")}</tbody></table></div></div>
       <div class="panel"><div class="panel-head"><h3>Was braucht Aufmerksamkeit?</h3><span>Live</span></div><div class="panel-body attention-list">
         <div class="attention-item"><div class="attention-icon">!</div><div><strong>${urgent} dringende Tickets</strong><small>Supportfälle mit hoher Priorität prüfen.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">⌚</div><div><strong>${state.orders.filter(o=>o.deadline<="2026-09-05").length} Auftrag bald fällig</strong><small>Deadline prüfen und ggf. Designer informieren.</small></div></div>
+        <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis nach Aufwand festlegen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">✓</div><div><strong>${state.clothing.filter(c=>c.status==="Kundenvorschau").length} Vorschau wartet</strong><small>Kundenfreigabe steht noch aus.</small></div></div>
       </div></div>
-    </div>
-    <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h3>Schnellaktionen</h3><span>Häufig verwendet</span></div><div class="panel-body grid action-grid">
-      <button class="quick-card" onclick="openOrderModal()"><b>+ Neuer Auftrag</b><span>Kunde, Wunsch, Preis und Deadline</span></button>
-      <button class="quick-card" onclick="openClothingModal()"><b>+ Neues Design</b><span>Design und Version erfassen</span></button>
-      <button class="quick-card" onclick="openCustomerModal()"><b>+ Neuer Kunde</b><span>Kundenakte erstellen</span></button>
-      <button class="quick-card" onclick="openTicketModal()"><b>+ Ticket</b><span>Support oder Änderung anlegen</span></button>
-    </div></div>`;
+    </div>`;
 }
 
 function genericTable(view){
   const configs={
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
-    orders:{t:"Aufträge",s:"Von der Anfrage bis zur Auslieferung.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Organisation","Kleidungsart","Designer","Preis","Status","Deadline"],rows:state.orders.map(x=>[x.id,x.client,x.organization||"Privat",x.type,x.designer,money(x.price),`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
-    customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,money(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
+    orders:{t:"Aufträge",s:"Anfrage, Richtpreis, Endpreis und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Organisation","Leistung","Richtpreis","Endpreis","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
+    customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
     tickets:{t:"Tickets",s:"Support, Änderungswünsche und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[x.id,x.title,x.client,x.priority,`<span class="status ${statusClass(x.priority==="Dringend"?"Dringend":x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
     employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
   };
@@ -105,6 +137,24 @@ function genericTable(view){
   document.getElementById("tableSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();[...document.querySelectorAll("#mainTable tbody tr")].forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?"":"none")});
 }
 
+function pricingView(){
+  title.textContent="Preise & Leistungen"; subtitle.textContent="Richtpreise zentral verwalten – Änderungen werden sofort in Formularen übernommen.";
+  root.innerHTML=`<div class="pricing-sections">${state.pricing.map((g,gi)=>`
+    <div class="pricing-section">
+      <div class="pricing-section-head"><h3>${g.icon} ${g.group}</h3><span>${g.items.length} Leistungen</span></div>
+      <div class="pricing-list">${g.items.map((i,ii)=>`
+        <div class="pricing-row">
+          <div><b>${i.name}</b><div class="inline-note">${i.surcharge?"Zusatzleistung / Aufpreis":i.per||"Richtpreis je nach Aufwand"}</div></div>
+          <div><span>Min.</span><br><input class="admin-price-input" type="number" step="0.5" value="${i.min}" onchange="updatePrice(${gi},${ii},'min',this.value)"></div>
+          <div><span>Max.</span><br><input class="admin-price-input" type="number" step="0.5" value="${i.max}" onchange="updatePrice(${gi},${ii},'max',this.value)"></div>
+          <div><span class="price-highlight">${priceRange(i)}</span></div>
+        </div>`).join("")}</div>
+    </div>`).join("")}
+    <div class="panel"><div class="panel-body"><b>📌 Hinweis</b><p class="inline-note">Alle Preise dienen als Richtwerte und können je nach Umfang, Detailgrad und Sonderwünschen angepasst werden. Der endgültige Preis wird nach Absprache im Ticket bzw. Auftrag festgelegt.</p></div></div>
+  </div>`;
+}
+window.updatePrice=function(gi,ii,key,val){state.pricing[gi].items[ii][key]=Number(val);save();showToast("Preis wurde aktualisiert.");};
+
 function categories(){
   title.textContent="Kategorien"; subtitle.textContent="Clothing sauber nach Typen organisieren.";
   root.innerHTML=`<div class="toolbar"><div></div><button class="primary-btn" onclick="openCategoryModal()">+ Kategorie</button></div>
@@ -113,8 +163,45 @@ function categories(){
 
 function showcase(){
   title.textContent="Showcase"; subtitle.textContent="Fertige Arbeiten für die öffentliche Galerie auswählen.";
-  root.innerHTML=`<div class="toolbar"><div></div><button class="primary-btn" onclick="showToast('Upload-System kommt im nächsten Schritt.')">+ Showcase Eintrag</button></div>
-  <div class="showcase-grid">${state.showcase.map(x=>`<div class="showcase-card"><div class="showcase-preview">◇</div><div class="showcase-info"><b>${x.name}</b><span>${x.category} · ${x.tag}</span></div></div>`).join("")}</div>`;
+  root.innerHTML=`<div class="showcase-grid">${state.showcase.map(x=>`<div class="showcase-card"><div class="showcase-preview">◇</div><div class="showcase-info"><b>${x.name}</b><span>${x.category} · ${x.tag}</span></div></div>`).join("")}</div>`;
+}
+
+function publicView(){
+  title.textContent="Öffentliche Seite"; subtitle.textContent="Konya Clothing – öffentliche Marken- und Auftragsseite.";
+  root.innerHTML=`
+  <div class="brand-banner"><img src="assets/konya-banner.png" alt="Konya Clothing Banner"></div>
+  <div class="hero-public">
+    <div><div class="hero-brand-row"><img src="assets/konya-logo.png" class="brand-logo-inline"><div class="brand-copy"><strong>KONYA</strong><span>CLOTHING</span></div></div>
+    <div class="eyebrow">CUSTOM FIVEM CLOTHING</div><h2>Deine Idee.<br>Dein Style.<br>Dein Clothing.</h2>
+    <p>Individuelle FiveM-Kleidung für Spieler, Crews, Unternehmen und Fraktionen. Vom kleinen Rework bis zum kompletten Outfit.</p>
+    <div style="margin-top:22px"><button class="primary-btn" onclick="openPublicOrderModal()">Auftrag anfragen</button> <button class="secondary-btn" onclick="render('showcase')">Showcase ansehen</button></div></div>
+    <img src="assets/konya-logo.png" class="hero-logo">
+  </div>
+  <div class="panel" style="margin-top:18px"><div class="panel-head"><h3>💰 Preisliste</h3><span>Richtpreise</span></div><div class="panel-body pricing-sections">
+    ${state.pricing.map(g=>`<div class="pricing-section"><div class="pricing-section-head"><h3>${g.icon} ${g.group}</h3></div><div class="pricing-list">${g.items.map(i=>`<div class="pricing-row" style="grid-template-columns:1fr auto"><div><b>${i.name}</b></div><span class="price-highlight">${priceRange(i)}</span></div>`).join("")}</div></div>`).join("")}
+    <div class="inline-note">📌 Alle Preise dienen als Richtwerte und können je nach Aufwand variieren. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
+  </div></div>`;
+}
+
+function customerArea(){
+  title.textContent="Kundenbereich"; subtitle.textContent="Auftragsstatus, Preisangebot, Vorschau und Änderungen.";
+  const o=state.orders[0];
+  root.innerHTML=`<div class="customer-hero"><div class="eyebrow">MEIN AUFTRAG</div><h2 style="margin:0">${o.id} · ${o.type}</h2><p style="color:var(--muted)">${o.client} · ${o.organization}</p>
+  <div class="step-row">${["Anfrage","Preisangebot","Angenommen","In Bearbeitung","Vorschau","Ausgeliefert"].map((s,i)=>`<div class="step ${i<=3?"active":""}">${s}</div>`).join("")}</div></div>
+  <div class="order-detail-grid" style="margin-top:18px">
+    <div class="detail-card"><h3>Auftragsdetails</h3>
+      <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
+      <div class="detail-row"><span>Leistung</span><b>${o.type}</b></div>
+      <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
+      <div class="detail-row"><span>Endpreis</span><b>${o.finalPrice?eur(o.finalPrice):"Noch offen"}</b></div>
+      <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
+      <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
+      <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
+    </div>
+    <div class="detail-card"><h3>Kundenvorschau</h3><div class="showcase-preview" style="border-radius:10px">◇</div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="primary-btn" onclick="showToast('Design freigegeben.')">Freigeben</button><button class="secondary-btn" onclick="showToast('Änderungswunsch erfasst.')">Änderung wünschen</button></div>
+    </div>
+  </div>`;
 }
 
 function logs(){
@@ -122,79 +209,17 @@ function logs(){
   root.innerHTML=`<div class="panel"><div class="panel-body table-wrap"><table><thead><tr><th>Datum</th><th>Mitarbeiter</th><th>Aktion</th><th>Bereich</th></tr></thead><tbody>${state.logs.map((x,i)=>`<tr><td>04.09.2026 · ${22-i}:1${i}</td><td>Konsti Shakur</td><td>${x}</td><td>Admin</td></tr>`).join("")}</tbody></table></div></div>`;
 }
 
-function publicView(){
-  title.textContent="Öffentliche Seite"; subtitle.textContent="Konya Clothing – öffentliche Marken- und Auftragsseite.";
-  root.innerHTML=`
-  <div class="brand-banner">
-    <img src="assets/konya-banner.png" alt="Konya Clothing Banner">
-  </div>
-
-  <div class="hero-public">
-    <div>
-      <div class="hero-brand-row">
-        <img src="assets/konya-logo.png" class="brand-logo-inline" alt="Konya Clothing Logo">
-        <div class="brand-copy">
-          <strong>KONYA</strong>
-          <span>CLOTHING</span>
-        </div>
-      </div>
-      <div class="eyebrow">CUSTOM FIVEM CLOTHING</div>
-      <h2>Deine Idee.<br>Dein Style.<br>Dein Clothing.</h2>
-      <p>Konya Clothing erstellt individuelle FiveM-Kleidung für einzelne Spieler, Crews, Unternehmen und Fraktionen. Vom kleinen Logo-Fix bis zum kompletten Outfit.</p>
-      <div style="margin-top:22px">
-        <button class="primary-btn" onclick="openPublicOrderModal()">Auftrag anfragen</button>
-        <button class="secondary-btn" onclick="render('showcase')">Showcase ansehen</button>
-      </div>
-    </div>
-    <img src="assets/konya-logo.png" class="hero-logo" alt="Konya Clothing Logo">
-  </div>
-
-  <div class="service-grid">
-    <div class="service-card"><b>Custom Clothing</b><span>Hoodies, Shirts, Hosen, Westen und komplette Sets.</span></div>
-    <div class="service-card"><b>Texture Fix</b><span>Unscharfe, verpixelte oder fehlerhafte Texturen überarbeiten.</span></div>
-    <div class="service-card"><b>Branding</b><span>Logos, Schriftzüge und Muster sauber auf Clothing platzieren.</span></div>
-    <div class="service-card"><b>Komplettpakete</b><span>Einheitliche Kollektionen für Gruppen oder Projekte.</span></div>
-  </div>
-
-  <div class="panel" style="margin-top:18px">
-    <div class="panel-head"><h3>Beliebte Leistungen</h3><span>Beispielpreise</span></div>
-    <div class="panel-body price-grid">
-      <div class="price-card"><h3>Texture Fix</h3><p>Schärfen, Kanten, Logo-Anpassung</p><div class="price">ab 25.000 $</div></div>
-      <div class="price-card"><h3>Einzelteil</h3><p>Hoodie, Hose, Shirt oder Weste</p><div class="price">ab 45.000 $</div></div>
-      <div class="price-card"><h3>Outfit</h3><p>Mehrere Kleidungsstücke im selben Stil</p><div class="price">ab 95.000 $</div></div>
-      <div class="price-card"><h3>Custom Pack</h3><p>Größeres Paket nach Absprache</p><div class="price">Anfrage</div></div>
-    </div>
-  </div>`;
-}
-
-function customerArea(){
-  title.textContent="Kundenbereich"; subtitle.textContent="Auftragsstatus, Vorschauen und Änderungen für Kunden.";
-  const o=state.orders[0];
-  root.innerHTML=`<div class="customer-hero"><div class="eyebrow">MEIN AUFTRAG</div><h2 style="margin:0">${o.id} · ${o.type}</h2><p style="color:var(--muted)">${o.client} · ${o.organization}</p>
-  <div class="step-row">${["Anfrage","Angenommen","In Bearbeitung","Vorschau","Freigabe","Ausgeliefert"].map((s,i)=>`<div class="step ${i<=2?"active":""}">${s}</div>`).join("")}</div></div>
-  <div class="grid two-col" style="margin-top:18px">
-    <div class="panel"><div class="panel-head"><h3>Auftragsdetails</h3><span>${o.progress}%</span></div><div class="panel-body">
-      <p><b>Status:</b> ${o.status}</p><p><b>Designer:</b> ${o.designer}</p><p><b>Deadline:</b> ${o.deadline}</p><p><b>Preis:</b> ${money(o.price)}</p>
-      <div class="progress" style="margin-top:14px"><span style="width:${o.progress}%"></span></div>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h3>Kundenvorschau</h3><span>Version 3</span></div><div class="panel-body">
-      <div class="showcase-preview" style="border-radius:10px">◇</div>
-      <div style="display:flex;gap:8px;margin-top:12px"><button class="primary-btn" onclick="showToast('Design freigegeben.')">Freigeben</button><button class="secondary-btn" onclick="showToast('Änderungswunsch erfasst.')">Änderung wünschen</button></div>
-    </div></div>
-  </div>`;
-}
-
 function render(view){
   document.querySelectorAll(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.view===view));
   if(view==="dashboard") dashboard();
   else if(["clothing","orders","customers","tickets","employees"].includes(view)) genericTable(view);
+  else if(view==="pricing") pricingView();
   else if(view==="categories") categories();
   else if(view==="showcase") showcase();
   else if(view==="logs") logs();
   else if(view==="public") publicView();
   else if(view==="customer") customerArea();
 }
-
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>render(b.dataset.view)));
 
 const backdrop=document.getElementById("modalBackdrop"), modalContent=document.getElementById("modalContent");
@@ -203,80 +228,72 @@ function closeModal(){backdrop.classList.add("hidden")}
 document.getElementById("modalClose").onclick=closeModal;
 backdrop.addEventListener("click",e=>{if(e.target===backdrop)closeModal()});
 function formTemplate(t,d,fields){return `<h2>${t}</h2><p>${d}</p><form id="modalForm"><div class="form-grid">${fields}</div><div class="form-actions"><button type="button" class="secondary-btn" onclick="closeModal()">Abbrechen</button><button class="primary-btn">Speichern</button></div></form>`}
+function serviceOptions(){return state.pricing.map(g=>`<optgroup label="${g.group}">${g.items.map(i=>`<option value="${i.name}">${i.name} — ${priceRange(i)}</option>`).join("")}</optgroup>`).join("")}
+function bindQuote(selectId, boxId){
+  const sel=document.getElementById(selectId), box=document.getElementById(boxId);
+  const update=()=>{const s=findService(sel.value);box.innerHTML=s?`<strong>Unverbindlicher Richtpreis</strong><div class="quote-price">${priceRange(s)}</div><span class="inline-note">Der endgültige Preis wird nach Prüfung des Aufwands festgelegt.</span>`:""};
+  sel.addEventListener("change",update);update();
+}
 
 window.openOrderModal=function(){
-  modal(formTemplate("Neuen Auftrag anlegen","Allgemeiner Clothing-Auftrag für Privatkunden, Crews oder Organisationen.",`
-  <div class="form-group"><label>Kunde</label><input name="client" required></div>
-  <div class="form-group"><label>Organisation / Fraktion (optional)</label><input name="organization" placeholder="Privat"></div>
-  <div class="form-group"><label>Leistung</label><select name="type"><option>Hoodie</option><option>Hose</option><option>Shirt</option><option>Weste</option><option>Komplettes Outfit</option><option>Texture Fix</option><option>Logo Platzierung</option><option>Sonderanfertigung</option></select></div>
-  <div class="form-group"><label>Designer</label><input name="designer" value="Konsti Shakur"></div>
-  <div class="form-group"><label>Preis</label><input name="price" type="number" value="50000"></div>
-  <div class="form-group"><label>Deadline</label><input name="deadline" type="date" required></div>
-  <div class="form-group full"><label>Wunsch / Beschreibung</label><textarea name="note" placeholder="Farben, Logo, Muster, Referenzen ..."></textarea></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));const next=43+state.orders.length;state.orders.unshift({id:`KC-2026-${String(next).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:f.designer,price:+f.price,deadline:f.deadline,status:"Neu",progress:10,priority:"Normal"});state.logs.unshift(`Neuer Auftrag für ${f.client} angelegt`);save();closeModal();render("orders");showToast("Auftrag wurde angelegt.")};
+  modal(formTemplate("Neuen Auftrag anlegen","Leistung auswählen – der Richtpreis wird automatisch übernommen.",`
+    <div class="form-group"><label>Kunde</label><input name="client" required></div>
+    <div class="form-group"><label>Organisation / Fraktion (optional)</label><input name="organization" placeholder="Privat"></div>
+    <div class="form-group full"><label>Leistung</label><select id="orderService" name="type">${serviceOptions()}</select><div id="orderQuote" class="quote-box"></div></div>
+    <div class="form-group"><label>Designer</label><input name="designer" value="Konsti Shakur"></div>
+    <div class="form-group"><label>Deadline</label><input name="deadline" type="date" required></div>
+    <div class="form-group full"><label>Wunsch / Beschreibung</label><textarea name="description" placeholder="Farben, Logo, Muster, Referenzen ..."></textarea></div>`));
+  bindQuote("orderService","orderQuote");
+  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));const s=findService(f.type);const next=43+state.orders.length;state.orders.unshift({id:`KC-2026-${String(next).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:f.designer,priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:f.deadline,status:"Anfrage",progress:0,priority:"Normal",description:f.description});state.logs.unshift(`Neuer Auftrag für ${f.client} angelegt`);save();closeModal();render("orders");showToast("Auftrag wurde angelegt.")};
 }
 
 window.openPublicOrderModal=function(){
-  modal(formTemplate("Auftrag anfragen","Beschreibe deinen Wunsch. Die Anfrage landet anschließend im Adminbereich.",`
-  <div class="form-group"><label>Name</label><input name="client" required></div>
-  <div class="form-group"><label>Discord</label><input name="discord" required></div>
-  <div class="form-group"><label>Leistung</label><select name="type"><option>Hoodie</option><option>Hose</option><option>Shirt</option><option>Weste</option><option>Komplettes Outfit</option><option>Texture Fix</option><option>Logo Platzierung</option><option>Sonderanfertigung</option></select></div>
-  <div class="form-group"><label>Organisation (optional)</label><input name="organization"></div>
-  <div class="form-group full"><label>Was soll gemacht werden?</label><textarea name="note" required></textarea></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.push({name:f.client,discord:f.discord,organization:f.organization||"Privat",orders:1,revenue:0,status:"Neu"});state.orders.unshift({id:`KC-2026-${String(50+state.orders.length).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:"Noch nicht zugewiesen",price:0,deadline:"Offen",status:"Anfrage",progress:0,priority:"Normal"});state.logs.unshift(`Neue Kundenanfrage von ${f.client}`);save();closeModal();showToast("Anfrage wurde gesendet.")};
+  modal(formTemplate("Auftrag anfragen","Wähle eine Leistung und sieh direkt den Richtpreis.",`
+    <div class="form-group"><label>Name</label><input name="client" required></div>
+    <div class="form-group"><label>Discord</label><input name="discord" required></div>
+    <div class="form-group full"><label>Leistung</label><select id="publicService" name="type">${serviceOptions()}</select><div id="publicQuote" class="quote-box"></div></div>
+    <div class="form-group"><label>Organisation (optional)</label><input name="organization"></div>
+    <div class="form-group full"><label>Was soll gemacht werden?</label><textarea name="description" required></textarea></div>`));
+  bindQuote("publicService","publicQuote");
+  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));const s=findService(f.type);state.customers.push({name:f.client,discord:f.discord,organization:f.organization||"Privat",orders:1,revenue:0,status:"Neu"});state.orders.unshift({id:`KC-2026-${String(50+state.orders.length).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:"Noch nicht zugewiesen",priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:"Offen",status:"Anfrage",progress:0,priority:"Normal",description:f.description});state.logs.unshift(`Neue Kundenanfrage von ${f.client}`);save();closeModal();showToast("Anfrage wurde gesendet.")};
 }
 
-window.openClothingModal=function(){
-  modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`
-  <div class="form-group"><label>Name</label><input name="name" required></div>
-  <div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div>
-  <div class="form-group"><label>Kunde</label><input name="customer" required></div>
-  <div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});state.logs.unshift(`Design ${f.name} angelegt`);save();closeModal();render("clothing");showToast("Design wurde gespeichert.")};
+window.openOrderDetail=function(id){
+  const o=state.orders.find(x=>x.id===id); if(!o) return;
+  modal(`<h2>${o.id}</h2><p>${o.client} · ${o.type}</p>
+    <div class="order-detail-grid">
+      <div class="detail-card">
+        <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
+        <div class="detail-row"><span>Endpreis</span><b>${o.finalPrice?eur(o.finalPrice):"Noch offen"}</b></div>
+        <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
+        <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
+        <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
+      </div>
+      <div class="detail-card">
+        <label class="inline-note">Endpreis festlegen</label>
+        <input class="field" id="finalPriceInput" type="number" step="0.5" value="${o.finalPrice??o.priceMin}" style="width:100%;margin-top:8px">
+        <button class="primary-btn" style="margin-top:10px;width:100%" onclick="saveFinalPrice('${o.id}')">Preisangebot speichern</button>
+        <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
+      </div>
+    </div>`);
 }
-window.openCustomerModal=function(){
-  modal(formTemplate("Neuen Kunden anlegen","Kundenakte für Bestellungen und Support.",`
-  <div class="form-group"><label>Name</label><input name="name" required></div>
-  <div class="form-group"><label>Discord</label><input name="discord"></div>
-  <div class="form-group full"><label>Organisation / Fraktion / Unternehmen</label><input name="organization" placeholder="Privat"></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.unshift({name:f.name,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});state.logs.unshift(`Kunde ${f.name} angelegt`);save();closeModal();render("customers");showToast("Kunde wurde angelegt.")};
-}
-window.openTicketModal=function(){
-  modal(formTemplate("Neues Ticket","Support oder Änderungswunsch erfassen.",`
-  <div class="form-group"><label>Betreff</label><input name="title" required></div>
-  <div class="form-group"><label>Kunde</label><input name="client" required></div>
-  <div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div>
-  <div class="form-group"><label>Zuständig</label><input name="assigned" value="Konsti Shakur"></div>
-  <div class="form-group full"><label>Interne Notiz</label><textarea name="note"></textarea></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.tickets.unshift({id:"#"+(129+state.tickets.length),title:f.title,client:f.client,priority:f.priority,status:"Offen",assigned:f.assigned});state.logs.unshift(`Ticket für ${f.client} angelegt`);save();closeModal();render("tickets");showToast("Ticket wurde angelegt.")};
-}
-window.openEmployeeModal=function(){
-  modal(formTemplate("Mitarbeiter hinzufügen","Rolle und Rechte zuweisen.",`
-  <div class="form-group"><label>Name</label><input name="name" required></div>
-  <div class="form-group"><label>Rolle</label><select name="role"><option>Admin</option><option>Designer</option><option>Support</option><option>Buchhaltung</option></select></div>
-  <div class="form-group full"><label>Berechtigungen</label><input name="permissions" value="Clothing, Aufträge"></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.employees.push({...f,active:true});state.logs.unshift(`Mitarbeiter ${f.name} hinzugefügt`);save();closeModal();render("employees");showToast("Mitarbeiter wurde hinzugefügt.")};
-}
-window.openCategoryModal=function(){
-  modal(formTemplate("Kategorie hinzufügen","Neue Clothing-Kategorie anlegen.",`<div class="form-group full"><label>Name</label><input name="name" required></div>`));
-  document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.categories.push(f.name);save();closeModal();render("categories");showToast("Kategorie wurde hinzugefügt.")};
-}
+window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
+
+window.openClothingModal=function(){modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div><div class="form-group"><label>Kunde</label><input name="customer" required></div><div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});save();closeModal();render("clothing");showToast("Design gespeichert.")}}
+window.openCustomerModal=function(){modal(formTemplate("Neuen Kunden anlegen","Kundenakte für Bestellungen und Support.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Discord</label><input name="discord"></div><div class="form-group full"><label>Organisation / Fraktion / Unternehmen</label><input name="organization" placeholder="Privat"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.unshift({name:f.name,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});save();closeModal();render("customers");showToast("Kunde angelegt.")}}
+window.openTicketModal=function(){modal(formTemplate("Neues Ticket","Support oder Änderungswunsch erfassen.",`<div class="form-group"><label>Betreff</label><input name="title" required></div><div class="form-group"><label>Kunde</label><input name="client" required></div><div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div><div class="form-group"><label>Zuständig</label><input name="assigned" value="Konsti Shakur"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.tickets.unshift({id:"#"+(129+state.tickets.length),title:f.title,client:f.client,priority:f.priority,status:"Offen",assigned:f.assigned});save();closeModal();render("tickets");showToast("Ticket angelegt.")}}
+window.openEmployeeModal=function(){modal(formTemplate("Mitarbeiter hinzufügen","Rolle und Rechte zuweisen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Rolle</label><select name="role"><option>Admin</option><option>Designer</option><option>Support</option><option>Buchhaltung</option></select></div><div class="form-group full"><label>Berechtigungen</label><input name="permissions" value="Clothing, Aufträge"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.employees.push({...f,active:true});save();closeModal();render("employees");showToast("Mitarbeiter hinzugefügt.")}}
+window.openCategoryModal=function(){modal(formTemplate("Kategorie hinzufügen","Neue Clothing-Kategorie anlegen.",`<div class="form-group full"><label>Name</label><input name="name" required></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.categories.push(f.name);save();closeModal();render("categories");showToast("Kategorie hinzugefügt.")}}
 window.deleteCategory=function(i){if(confirm("Kategorie wirklich löschen?")){state.categories.splice(i,1);save();render("categories")}}
 
 document.getElementById("quickAdd").onclick=()=>openOrderModal();
-document.getElementById("backupBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="konya-clothing-backup.json";a.click();URL.revokeObjectURL(a.href);showToast("Backup wurde erstellt.")};
+document.getElementById("backupBtn").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="konya-clothing-backup.json";a.click();URL.revokeObjectURL(a.href);showToast("Backup erstellt.")};
 
 document.getElementById("globalSearch").addEventListener("keydown",e=>{
-  if(e.key==="Enter"){const q=e.target.value.toLowerCase();const found=[
-    ...state.orders.map(x=>({type:"Auftrag",label:`${x.id} — ${x.client}`})),
-    ...state.customers.map(x=>({type:"Kunde",label:x.name})),
-    ...state.clothing.map(x=>({type:"Design",label:x.name}))
-  ].filter(x=>x.label.toLowerCase().includes(q));
-  modal(`<h2>Suchergebnisse</h2><p>${found.length} Treffer für „${e.target.value}“</p><div class="attention-list">${found.length?found.map(x=>`<div class="attention-item"><div class="attention-icon">⌕</div><div><strong>${x.label}</strong><small>${x.type}</small></div></div>`).join(""):'<div class="empty">Keine Treffer gefunden.</div>'}</div>`)}}
+  if(e.key==="Enter"){const q=e.target.value.toLowerCase();const found=[...state.orders.map(x=>({type:"Auftrag",label:`${x.id} — ${x.client}`})),...state.customers.map(x=>({type:"Kunde",label:x.name})),...state.clothing.map(x=>({type:"Design",label:x.name}))].filter(x=>x.label.toLowerCase().includes(q));modal(`<h2>Suchergebnisse</h2><p>${found.length} Treffer</p><div class="attention-list">${found.length?found.map(x=>`<div class="attention-item"><div class="attention-icon">⌕</div><div><strong>${x.label}</strong><small>${x.type}</small></div></div>`).join(""):'<div class="empty">Keine Treffer gefunden.</div>'}</div>`)}}
 );
 
-const notify=document.createElement("div");notify.className="notification-menu hidden";notify.id="notificationMenu";
-notify.innerHTML=state.notifications.map(n=>`<div class="notification-item"><b>${n}</b><span>Gerade eben</span></div>`).join("");document.body.appendChild(notify);
+const notify=document.createElement("div");notify.className="notification-menu hidden";notify.id="notificationMenu";notify.innerHTML=state.notifications.map(n=>`<div class="notification-item"><b>${n}</b><span>Gerade eben</span></div>`).join("");document.body.appendChild(notify);
 document.getElementById("notifyBtn").onclick=()=>{notify.classList.toggle("hidden");document.getElementById("notifyDot").style.display="none"};
 
 render("dashboard");
