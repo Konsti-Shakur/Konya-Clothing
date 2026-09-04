@@ -1,12 +1,11 @@
-# Konya Clothing V3.4.1 – Fix
+# Konya Clothing V3.4.2 – Navigation Fix
 
-Diese Version repariert den aktuellen V3.4-Stand:
+Dieser kleine Fix macht nur den V3.4-Bereich eindeutig sichtbar:
 
-1. Benachrichtigungen sind sicher in der linken Navigation enthalten.
-2. Der bekannte Demo-Auftrag KC-2026-0042 wird auf Hoodie-Richtpreis 8–12 € korrigiert.
-3. Ein alter gespeicherter 5-€-Wert dieses Demo-Auftrags wird automatisch auf 10 € Endpreis migriert.
-4. Die globale Suche sagt jetzt „Auftrag, Kunde, Organisation“ statt „Fraktion“.
-5. Unten beim Admin steht „V3.4.1“, damit sofort sichtbar ist, ob Railway wirklich die neue Version ausliefert.
+1. „Benachrichtigungen“ wird fest direkt nach „Protokoll“ in die Sidebar eingefügt.
+2. Die Benachrichtigungsseite ist mit der Navigation verbunden.
+3. Unten beim Admin wird die Build-Version V3.4.2 sichtbar angezeigt.
+4. Der Browser-Titel enthält ebenfalls V3.4.2 zur Kontrolle.
+5. Alle bisherigen Funktionen und Datenmigrationen aus V3.0–V3.4.1 bleiben enthalten.
 
-Enthalten bleiben die Funktionen aus V3.0 bis V3.4:
-Preise, Aufträge, Uploads, Kundenvorschau/Freigabe, Zahlungsstatus und interne Benachrichtigungen.
+Nach Push zu GitHub und Railway bitte Strg+F5 drücken.
