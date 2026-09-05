@@ -717,7 +717,7 @@ function renderPublicPage(page){
       <div class="studio-hero-visual">
         <div class="studio-visual-frame">
           <img src="/assets/konya-banner.png" alt="Konya Clothing">
-          <div class="studio-visual-overlay">
+          <div class="studio-visual-caption">
             <span>Konya Clothing</span>
             <strong>Custom Design Studio</strong>
           </div>

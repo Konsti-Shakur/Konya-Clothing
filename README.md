@@ -1,26 +1,17 @@
-# Konya Clothing V3.17 – Clean & Stable
+# Konya Clothing V3.18 – Visual Polish
 
-Diese Version behebt die sichtbaren Layout-Probleme aus V3.16 und mehrere echte JavaScript-Fehler.
+Diese Version korrigiert gezielt die optischen Probleme aus dem Screenshot.
 
-## Die 5 wichtigsten Fixes
+## Die 5 wichtigsten Änderungen
 
-1. **Öffentliche Seite sauber getrennt**
-   Admin-Topbar und Sidebar werden auf der Hauptseite zuverlässig ausgeblendet.
+1. Hero-Proportionen neu abgestimmt
+2. Bannerkarte sauber skaliert
+3. Express- und Workflow-Karten neu positioniert
+4. Typografie, Abstände und Abschnittshöhen bereinigt
+5. Desktop-, Tablet- und Mobile-Layout stabilisiert
 
-2. **Hero komplett korrigiert**
-   Überschrift, Banner und Express/Workflow-Karten überlappen nicht mehr und passen sauber in das Layout.
+Zusätzlich wurden Überläufe und unsaubere Ausrichtungen im Showcase, Preisbereich und Header reduziert.
 
-3. **Runtime-Fehler behoben**
-   Fehlende Routing-Variablen, `priceLookup()` und Datei-Upload-Helfer wurden ergänzt.
-
-4. **Datenfehler korrigiert**
-   Preisgruppen verwenden das richtige Datenfeld und öffentliche Aufträge speichern die Leistung kompatibel zum Adminbereich.
-
-5. **Responsive + Overflow Fix**
-   Desktop, Tablet und Handy brechen sauber um; Tabellen, Showcase und Formulare laufen nicht mehr aus dem Layout.
-
-## Prüfung
-- `node --check app.js`
-- `node --check server.js`
-
-PostgreSQL, Kundenbereich, öffentliche Unterseiten und der vorhandene Adminbereich bleiben erhalten.
+Syntaxprüfung:
+- app.js
+- server.js
