@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Konya Clothing V3.22 — Admin</title>
+  <title>Konya Clothing V3.24 — Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,94 +11,46 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar admin-sidebar-v2">
-      <div class="admin-brand-v2">
-        <div class="admin-brand-mark">
-          <img src="assets/konya-logo.png" alt="Konya Clothing Logo" />
-        </div>
-        <div>
-          <strong>KONYA</strong>
-          <span>CONTROL CENTER</span>
-        </div>
+    <aside class="sidebar mock-sidebar">
+      <div class="mock-brand">
+        <img src="assets/konya-logo.png" alt="Konya Clothing">
+        <div><strong>KONYA</strong><span>CLOTHING</span></div>
       </div>
-
-      <nav class="nav admin-nav-v2">
-        <div class="admin-nav-group">
-          <div class="admin-nav-label">START</div>
-          <button class="nav-item active" data-view="dashboard"><span class="nav-ico">⌂</span><span>Dashboard</span></button>
+      <nav class="nav mock-nav">
+        <div class="mock-nav-group"><div class="mock-nav-label">MAIN</div>
+          <button class="nav-item active" data-view="dashboard"><span class="mock-ico">⌂</span><span>Übersicht</span></button>
+          <button class="nav-item" data-view="orders"><span class="mock-ico">▣</span><span>Aufträge</span><span class="count-badge" id="ordersBadge">3</span></button>
+          <button class="nav-item" data-view="customers"><span class="mock-ico">◉</span><span>Kunden</span></button>
+          <button class="nav-item" data-view="clothing"><span class="mock-ico">◈</span><span>Designs</span></button>
+          <button class="nav-item" data-view="tickets"><span class="mock-ico">□</span><span>Tickets</span><span class="count-badge danger" id="ticketsBadge">1</span></button>
         </div>
-
-        <div class="admin-nav-group">
-          <div class="admin-nav-label">AUFTRÄGE</div>
-          <button class="nav-item" data-view="orders"><span class="nav-ico">▣</span><span>Aufträge</span><span class="count-badge" id="ordersBadge">3</span></button>
-          <button class="nav-item" data-view="tickets"><span class="nav-ico">□</span><span>Tickets</span><span class="count-badge danger" id="ticketsBadge">1</span></button>
-          <button class="nav-item" data-view="customers"><span class="nav-ico">◎</span><span>Kunden</span></button>
+        <div class="mock-nav-group"><div class="mock-nav-label">VERWALTUNG</div>
+          <button class="nav-item" data-view="categories"><span class="mock-ico">▦</span><span>Kategorien</span></button>
+          <button class="nav-item" data-view="pricing"><span class="mock-ico">€</span><span>Preise & Leistungen</span></button>
+          <button class="nav-item" data-view="employees"><span class="mock-ico">♙</span><span>Mitarbeiter</span></button>
+          <button class="nav-item" data-view="showcase"><span class="mock-ico">◇</span><span>Showcase</span></button>
+          <button class="nav-item" data-view="notifications"><span class="mock-ico">◉</span><span>Benachrichtigungen</span></button>
         </div>
-
-        <div class="admin-nav-group">
-          <div class="admin-nav-label">CONTENT</div>
-          <button class="nav-item" data-view="clothing"><span class="nav-ico">◈</span><span>Clothing</span></button>
-          <button class="nav-item" data-view="showcase"><span class="nav-ico">◇</span><span>Showcase</span></button>
-          <button class="nav-item" data-view="categories"><span class="nav-ico">▦</span><span>Kategorien</span></button>
-          <button class="nav-item" data-view="pricing"><span class="nav-ico">€</span><span>Preise & Leistungen</span></button>
-        </div>
-
-        <div class="admin-nav-group">
-          <div class="admin-nav-label">VERWALTUNG</div>
-          <button class="nav-item" data-view="employees"><span class="nav-ico">♙</span><span>Mitarbeiter</span></button>
-          <button class="nav-item" data-view="notifications"><span class="nav-ico">◉</span><span>Benachrichtigungen</span></button>
-          <button class="nav-item" data-view="logs"><span class="nav-ico">⌁</span><span>Protokoll</span></button>
+        <div class="mock-nav-group"><div class="mock-nav-label">SYSTEM</div>
+          <button class="nav-item" data-view="logs"><span class="mock-ico">⌁</span><span>Protokoll</span></button>
+          <button class="sidebar-link" data-view="public"><span class="mock-ico">↗</span><span>Homepage</span></button>
+          <button class="sidebar-link" data-view="customer"><span class="mock-ico">◎</span><span>Kundenbereich</span></button>
+          <button class="sidebar-link" id="backupBtn"><span class="mock-ico">⛁</span><span>Datensicherung</span></button>
         </div>
       </nav>
-
-      <div class="sidebar-bottom admin-sidebar-bottom-v2">
-        <div class="admin-external-links">
-          <button class="sidebar-link" data-view="public">↗ <span>Homepage öffnen</span></button>
-          <button class="sidebar-link" data-view="customer">◎ <span>Kundenbereich</span></button>
-          <button class="sidebar-link" id="backupBtn">⛁ <span>Datensicherung</span></button>
-        </div>
-
-        <div class="user-box admin-user-v2">
-          <div class="avatar">KS</div>
-          <div class="admin-user-copy">
-            <strong>Konsti Shakur</strong>
-            <small>Inhaber / Admin</small>
-            <div class="admin-user-meta">
-              <span class="build-version">V3.22</span>
-              <span class="backend-status" id="backendStatus">Datenbank wird verbunden …</span>
-            </div>
-          </div>
-        </div>
+      <div class="mock-user">
+        <div class="avatar">KS</div>
+        <div><strong>Konsti Shakur</strong><small>Inhaber / Admin</small><span class="mock-online"><i></i> Online</span></div>
+        <span class="mock-chevron">⌄</span>
       </div>
     </aside>
 
     <main class="main">
-      <header class="topbar admin-topbar-v2">
-        <div class="admin-topbar-left">
-          <div class="eyebrow">KONYA CONTROL CENTER</div>
-          <div class="admin-title-row">
-            <div>
-              <h1 id="pageTitle">Dashboard</h1>
-              <p id="pageSubtitle">Alle wichtigen Bereiche zentral im Blick.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="top-actions admin-top-actions-v2">
-          <div class="global-search admin-search-v2">
-            <span>⌕</span>
-            <input id="globalSearch" placeholder="Auftrag, Kunde oder Organisation suchen ..." />
-          </div>
-
-          <button class="admin-notify-v2" id="notifyBtn" title="Benachrichtigungen">
-            <span>◉</span>
-            <span class="dot" id="notifyDot"></span>
-          </button>
-
-          <button class="primary-btn admin-new-v2" id="quickAdd">
-            <span>＋</span>
-            <span>Neuer Auftrag</span>
-          </button>
+      <header class="topbar mock-topbar">
+        <div class="mock-search"><span>⌕</span><input id="globalSearch" placeholder="Auftrag, Kunde oder Design suchen..." /><kbd>Strg + K</kbd></div>
+        <div class="mock-top-actions">
+          <button class="mock-bell" id="notifyBtn" title="Benachrichtigungen"><span>♢</span><span class="dot" id="notifyDot"></span></button>
+          <button class="primary-btn mock-new-order" id="quickAdd">＋ Neuer Auftrag</button>
         </div>
       </header>
 

@@ -289,159 +289,119 @@ function showToast(msg){const t=document.getElementById("toast");t.textContent=m
 function kpi(label,val,foot,cls=""){return `<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-foot">${foot}</div></div>`}
 
 function dashboard(){
-  const urgent=state.tickets.filter(x=>x.priority==="Dringend" && x.status!=="Geschlossen").length;
-  const openTickets=state.tickets.filter(isTicketOpen).length;
   const openOrders=state.orders.filter(isOrderOpen);
+  const openTickets=state.tickets.filter(isTicketOpen);
+  const urgentTickets=state.tickets.filter(t=>t.priority==="Dringend" && isTicketOpen(t)).length;
   const openPayments=state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length;
   const activeCustomers=state.customers.filter(c=>c.status!=="Inaktiv").length;
   const previewWaiting=state.clothing.filter(c=>c.status==="Kundenvorschau").length;
-  const activeEmployees=state.employees.filter(e=>e.status==="Aktiv").length;
-  const completedOrders=state.orders.filter(o=>["Fertig","Ausgeliefert"].includes(o.status)).length;
+  const urgentOrders=state.orders.filter(o=>o.priority==="Dringend" && isOrderOpen(o)).length;
+  const waitingCustomer=state.tickets.filter(t=>t.status==="Warten auf Kunde").length;
 
-  title.textContent="Dashboard";
-  subtitle.textContent="Deine Aufträge, Kunden und offenen Aufgaben auf einen Blick.";
+  title.textContent="Übersicht";
+  subtitle.textContent="Hier hast du die volle Kontrolle über Konya Clothing.";
 
   root.innerHTML=`
-    <div class="admin-dashboard-v2">
-      <section class="admin-welcome-v2">
-        <div class="admin-welcome-copy">
-          <span class="admin-small-label">HEUTE IM ÜBERBLICK</span>
-          <h2>Willkommen zurück, Konsti.</h2>
-          <p>Hier siehst du sofort, was erledigt werden muss und wie deine aktuellen Aufträge stehen.</p>
+    <div class="mock-dashboard">
+      <section class="mock-hero">
+        <div class="mock-hero-copy">
+          <span class="mock-kicker">KONYA CLOTHING · ADMIN DASHBOARD</span>
+          <h2>Willkommen zurück,<br><em>Konsti Shakur.</em></h2>
+          <p>Hier hast du die volle Kontrolle über Konya Clothing.</p>
         </div>
-
-        <div class="admin-welcome-actions">
-          <button class="admin-action-card primary" onclick="openOrderModal()">
-            <span class="admin-action-icon">＋</span>
-            <span><strong>Neuer Auftrag</strong><small>Auftrag manuell anlegen</small></span>
-          </button>
-          <button class="admin-action-card" onclick="render('tickets')">
-            <span class="admin-action-icon">□</span>
-            <span><strong>Tickets öffnen</strong><small>${openTickets} aktuell offen</small></span>
-          </button>
-          <button class="admin-action-card" onclick="window.location.href='/'">
-            <span class="admin-action-icon">↗</span>
-            <span><strong>Homepage</strong><small>Öffentliche Seite ansehen</small></span>
-          </button>
+        <div class="mock-hero-art">
+          <img src="/assets/konya-banner.png" alt="Konya Clothing">
+          <div class="mock-hero-art-shade"></div>
+          <div class="mock-hero-words"><span>MORE</span><span>THAN</span><span>CLOTHING</span><i></i></div>
+        </div>
+        <div class="mock-date-card">
+          <span>${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"})}</span>
+          <strong>${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr</strong>
+          <small><i></i> System Online</small>
         </div>
       </section>
 
-      <section class="admin-stat-row-v2">
-        <article>
-          <div class="admin-stat-top"><span>Offene Aufträge</span><b>▣</b></div>
-          <strong>${openOrders.length}</strong>
-          <small>${completedOrders} bereits abgeschlossen</small>
-        </article>
-        <article>
-          <div class="admin-stat-top"><span>Aktive Kunden</span><b>◎</b></div>
-          <strong>${activeCustomers}</strong>
-          <small>${state.customers.length} Kunden insgesamt</small>
-        </article>
-        <article class="${urgent ? "warning" : ""}">
-          <div class="admin-stat-top"><span>Dringende Tickets</span><b>!</b></div>
-          <strong>${urgent}</strong>
-          <small>${openTickets} Tickets insgesamt offen</small>
-        </article>
-        <article class="${openPayments ? "payment" : ""}">
-          <div class="admin-stat-top"><span>Offene Zahlungen</span><b>€</b></div>
-          <strong>${openPayments}</strong>
-          <small>Zahlungsstatus prüfen</small>
-        </article>
+      <section class="mock-kpis">
+        ${[
+          ["◈","Designs",state.clothing.length,"Gesamt im System",""],
+          ["◉","Kunden",activeCustomers,"Aktive Kunden",""],
+          ["▤","Offene Aufträge",openOrders.length,"Aktuell in Arbeit",""],
+          ["□","Offene Tickets",openTickets.length,"Support & Änderungen",""],
+          ["€","Offene Zahlungen",openPayments,"Noch nicht bezahlt",""],
+          ["△","Dringend",urgentTickets+urgentOrders,"Benötigt Aufmerksamkeit","danger"]
+        ].map(x=>`<article class="${x[4]}"><span class="mock-kpi-icon">${x[0]}</span><div><small>${x[1]}</small><strong>${x[2]}</strong><p>${x[3]}</p></div></article>`).join("")}
       </section>
 
-      <section class="admin-main-grid-v2">
-        <div class="admin-main-column-v2">
-          <article class="admin-panel-v2">
-            <div class="admin-panel-head-v2">
-              <div>
-                <span class="admin-small-label">AUFTRÄGE</span>
-                <h3>Aktuelle Aufträge</h3>
+      <section class="mock-main-grid">
+        <div class="mock-main-col">
+          <article class="mock-panel mock-orders-panel">
+            <div class="mock-panel-head">
+              <div><h3>Aktuelle Aufträge</h3><p>Die neuesten Aufträge im Überblick.</p></div>
+              <div class="mock-tabs">
+                <button class="active">Alle (${openOrders.length})</button>
+                <button>Neu (${openOrders.filter(o=>o.status==="Anfrage").length})</button>
+                <button>In Arbeit (${openOrders.filter(o=>["In Bearbeitung","Kundenvorschau"].includes(o.status)).length})</button>
+                <button>Warten (${openOrders.filter(o=>String(o.status).includes("Warten")).length})</button>
+                <button>Fertig (${state.orders.filter(o=>["Fertig","Ausgeliefert"].includes(o.status)).length})</button>
               </div>
-              <button onclick="render('orders')">Alle ansehen →</button>
+              <button class="mock-link-btn" onclick="render('orders')">Alle Aufträge →</button>
             </div>
-
-            <div class="admin-order-list-v2">
-              ${openOrders.length ? openOrders.slice(0,6).map(o=>`
-                <button class="admin-order-row-v2" onclick="openOrderDetail('${o.id}')">
-                  <div class="admin-order-id-v2"><strong>${o.id}</strong><small>${o.type||"Custom Clothing"}</small></div>
-                  <div class="admin-order-client-v2"><strong>${o.client}</strong><small>${o.organization||"Privat"}</small></div>
-                  <div class="admin-order-status-v2"><span class="status ${statusClass(o.status)}">${o.status}</span></div>
-                  <div class="admin-order-progress-v2">
-                    <div><span>Fortschritt</span><b>${o.progress||0}%</b></div>
-                    <div class="progress"><span style="width:${o.progress||0}%"></span></div>
-                  </div>
-                  <div class="admin-order-price-v2"><strong>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</strong><small>${o.paymentStatus||"Nicht berechnet"}</small></div>
-                  <span class="admin-row-arrow-v2">→</span>
-                </button>`).join("") : `
-                <div class="admin-empty-v2">
-                  <span>✓</span><strong>Keine offenen Aufträge</strong><small>Aktuell ist alles erledigt.</small>
-                </div>`}
+            <div class="mock-order-table">
+              <div class="mock-order-head"><span>#</span><span>KUNDE</span><span>LEISTUNG</span><span>PREIS</span><span>STATUS</span><span>FORTSCHRITT</span><span>AKTIONEN</span></div>
+              ${openOrders.slice(0,5).map(o=>`
+                <button class="mock-order-row" onclick="openOrderDetail('${o.id}')">
+                  <strong>${o.id}</strong><span>${o.client}</span><span>${o.type||"Custom Clothing"}</span>
+                  <span>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</span>
+                  <span><b class="status ${statusClass(o.status)}">${o.status}</b></span>
+                  <span class="mock-progress-cell"><i><b style="width:${o.progress||0}%"></b></i><em>${o.progress||0}%</em></span>
+                  <span class="mock-row-actions"><i>◉</i><i>✎</i><i>…</i></span>
+                </button>`).join("")}
             </div>
           </article>
 
-          <article class="admin-panel-v2 admin-performance-v2">
-            <div class="admin-panel-head-v2">
-              <div>
-                <span class="admin-small-label">STATUS</span>
-                <h3>Arbeitsstand</h3>
+          <section class="mock-bottom-grid">
+            <article class="mock-panel">
+              <div class="mock-panel-head compact"><div><h3>Letzte Kunden</h3><p>Zuletzt aktiv im System.</p></div><button class="mock-link-btn" onclick="render('customers')">Alle ansehen →</button></div>
+              <div class="mock-customer-list">
+                ${state.customers.slice(0,4).map(c=>`<button onclick="render('customers')"><span class="mock-mini-avatar">${(c.name||"K").split(" ").map(v=>v[0]).slice(0,2).join("")}</span><span><strong>${c.name}</strong><small>${c.organization||"Privat"}</small></span><b>${state.orders.filter(o=>o.client===c.name).length} Auftrag</b></button>`).join("")}
               </div>
-            </div>
-
-            <div class="admin-performance-grid-v2">
-              <div><span>Vorschau wartet</span><strong>${previewWaiting}</strong><small>auf Kundenfreigabe</small></div>
-              <div><span>Aktive Mitarbeiter</span><strong>${activeEmployees}</strong><small>im System verfügbar</small></div>
-              <div><span>Designs</span><strong>${state.clothing.length}</strong><small>im Clothing-Bereich</small></div>
-              <div><span>Showcase</span><strong>${state.showcase.length}</strong><small>öffentliche Einträge</small></div>
-            </div>
-          </article>
+            </article>
+            <article class="mock-panel">
+              <div class="mock-panel-head compact"><div><h3>Neueste Tickets</h3><p>Aktuelle Support-Anfragen.</p></div><button class="mock-link-btn" onclick="render('tickets')">Alle ansehen →</button></div>
+              <div class="mock-ticket-list">
+                ${state.tickets.slice(0,4).map(t=>`<button onclick="openTicketDetail('${t.id}')"><span class="mock-ticket-icon">□</span><span><strong>#${t.id}</strong><small>${t.subject||"Support-Anfrage"}</small></span><b class="status ${t.priority==="Dringend"?"danger":"new"}">${t.priority||"Normal"}</b></button>`).join("")}
+              </div>
+            </article>
+            <article class="mock-panel">
+              <div class="mock-panel-head compact"><div><h3>System Status</h3><p>Alle Systeme laufen stabil.</p></div></div>
+              <div class="mock-system-list">
+                ${["Webseite","Datenbank","Benachrichtigungen","Dateispeicher","Browser-Backup"].map(x=>`<div><span><i></i>${x}</span><b>Online</b></div>`).join("")}
+              </div>
+            </article>
+          </section>
         </div>
 
-        <aside class="admin-side-column-v2">
-          <article class="admin-panel-v2">
-            <div class="admin-panel-head-v2 compact">
-              <div>
-                <span class="admin-small-label">PRIORITÄT</span>
-                <h3>Jetzt erledigen</h3>
-              </div>
-            </div>
-
-            <div class="admin-task-list-v2">
-              <button onclick="render('tickets')">
-                <span class="admin-task-icon-v2 danger">!</span>
-                <span><strong>${urgent} dringende Tickets</strong><small>Supportfälle zuerst prüfen</small></span>
-                <b>→</b>
-              </button>
-              <button onclick="render('orders')">
-                <span class="admin-task-icon-v2 money">€</span>
-                <span><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis festlegen</small></span>
-                <b>→</b>
-              </button>
-              <button onclick="render('orders')">
-                <span class="admin-task-icon-v2 pay">€</span>
-                <span><strong>${openPayments} Zahlungen offen</strong><small>Zahlungsstatus kontrollieren</small></span>
-                <b>→</b>
-              </button>
-              <button onclick="render('tickets')">
-                <span class="admin-task-icon-v2 wait">□</span>
-                <span><strong>${state.tickets.filter(t=>t.status==="Warten auf Kunde").length} warten auf Kunden</strong><small>Rückmeldungen im Blick behalten</small></span>
-                <b>→</b>
-              </button>
+        <aside class="mock-side-col">
+          <article class="mock-panel">
+            <div class="mock-panel-head compact"><div><h3>Schnellaktionen</h3></div></div>
+            <div class="mock-quick-actions">
+              <button onclick="openOrderModal()"><span>＋</span><div><strong>Neuer Auftrag</strong><small>Manuell erstellen</small></div></button>
+              <button onclick="render('customers')"><span>◎</span><div><strong>Neuer Kunde</strong><small>Kunden verwalten</small></div></button>
+              <button onclick="render('clothing')"><span>◈</span><div><strong>Neues Design</strong><small>Design verwalten</small></div></button>
+              <button onclick="render('pricing')"><span>€</span><div><strong>Preis bearbeiten</strong><small>Preise & Pakete</small></div></button>
             </div>
           </article>
-
-          <article class="admin-panel-v2 admin-quick-links-v2">
-            <div class="admin-panel-head-v2 compact">
-              <div>
-                <span class="admin-small-label">SCHNELLZUGRIFF</span>
-                <h3>Direkt öffnen</h3>
-              </div>
-            </div>
-
-            <div class="admin-quick-grid-v2">
-              <button onclick="render('customers')"><span>◎</span><strong>Kunden</strong></button>
-              <button onclick="render('pricing')"><span>€</span><strong>Preise</strong></button>
-              <button onclick="render('employees')"><span>♙</span><strong>Mitarbeiter</strong></button>
-              <button onclick="render('showcase')"><span>◇</span><strong>Showcase</strong></button>
+          <article class="mock-panel">
+            <div class="mock-panel-head compact"><div><h3>Was braucht Aufmerksamkeit?</h3></div><span class="mock-live"><i></i> Live</span></div>
+            <div class="mock-attention-list">
+              ${[
+                ["!","danger",`${urgentTickets} dringende Tickets`,"Supportfälle mit hoher Priorität prüfen.","tickets"],
+                ["€","money",`${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen`,"Endpreis nach Aufwand festlegen.","orders"],
+                ["✓","ok",`${previewWaiting} Vorschau wartet`,"Kundenfreigabe steht noch aus.","clothing"],
+                ["€","money",`${openPayments} Zahlungen offen`,"Bezahlstatus der Aufträge prüfen.","orders"],
+                ["!","danger",`${urgentOrders} dringende Aufträge`,"Aufträge mit hoher Priorität zuerst bearbeiten.","orders"],
+                ["□","wait",`${waitingCustomer} Tickets warten auf Kunden`,"Offene Rückfragen im Blick behalten.","tickets"]
+              ].map(x=>`<button onclick="render('${x[4]}')"><span class="${x[1]}">${x[0]}</span><div><strong>${x[2]}</strong><small>${x[3]}</small></div></button>`).join("")}
             </div>
           </article>
         </aside>
@@ -569,7 +529,7 @@ function publicView(){
           <a href="/showcase" data-public-nav="showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
           <a href="/preise" data-public-nav="prices" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
           <a href="/auftrag" data-public-nav="order" onclick="event.preventDefault();publicNavigate('order')">Auftrag</a>
-          <a href="/kundenbereich" onclick="">Kundenbereich</a>
+          <a href="/kundenbereich">Kundenbereich</a>
         </nav>
 
         <div class="site-header-actions premium-header-actions">
@@ -608,22 +568,38 @@ function publicView(){
 
       <main class="site-main" id="publicPage"></main>
 
-      <footer class="site-footer">
-        <div class="site-footer-brand">
-          <img src="/assets/konya-logo.png" alt="Konya Clothing">
-          <div>
-            <strong>Konya Clothing</strong>
-            <p>Individuelle FiveM-Kleidung, Texture Reworks und Custom Designs.</p>
+      <footer class="site-footer footer-v23">
+        <div class="footer-v23-grid">
+          <div class="footer-v23-brand">
+            <img src="/assets/konya-logo.png" alt="Konya Clothing">
+            <div>
+              <strong>Konya Clothing</strong>
+              <p>Custom FiveM Clothing, Texture Reworks und individuelle Designs.</p>
+            </div>
+          </div>
+
+          <div class="footer-v23-col">
+            <span>Navigation</span>
+            <a href="/" onclick="event.preventDefault();publicNavigate('home')">Startseite</a>
+            <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
+            <a href="/preise" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
+          </div>
+
+          <div class="footer-v23-col">
+            <span>Service</span>
+            <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+            <a href="/kundenbereich">Kundenbereich</a>
+            <a href="/admin">Admin</a>
+          </div>
+
+          <div class="footer-v23-status">
+            <span>Konya Clothing</span>
+            <strong>Custom FiveM Design Studio</strong>
+            <i></i>
           </div>
         </div>
-        <div class="site-footer-links">
-          <a href="/" onclick="event.preventDefault();publicNavigate('home')">Startseite</a>
-          <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
-          <a href="/preise" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
-          <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
-          <a href="/kundenbereich">Kundenbereich</a>
-        </div>
-        <div class="site-footer-bottom">
+
+        <div class="site-footer-bottom footer-v23-bottom">
           <span>© 2026 Konya Clothing</span>
           <span>Alle Preise sind Richtwerte und werden nach Aufwand abgestimmt.</span>
         </div>
@@ -838,97 +814,133 @@ function renderPublicPage(page){
   const featured=state.showcase.slice(0,6);
 
   container.innerHTML=`
-    <section class="cinema-hero">
-      <div class="cinema-bg"></div>
-      <div class="cinema-shade"></div>
+    <section class="home-v23-hero">
+      <div class="home-v23-bg"></div>
+      <div class="home-v23-overlay"></div>
 
-      <div class="cinema-left">
-        <div class="cinema-kicker">KONYA CLOTHING · CUSTOM FIVEM DESIGN</div>
+      <div class="home-v23-content">
+        <div class="home-v23-kicker"><span></span>KONYA CLOTHING · CUSTOM FIVEM DESIGN</div>
+        <h1>Custom Clothing.<br><em>Sauber. Klar. Eigen.</em></h1>
+        <p>Individuelle FiveM-Kleidung, Texture Reworks und Branding – mit einem klaren Ablauf von der Anfrage bis zur fertigen Datei.</p>
 
-        <h1>Custom Clothing.<br><span>Sauber. Klar. Eigen.</span></h1>
-
-        <p>
-          Individuelle FiveM-Kleidung, Texture Reworks und Branding –
-          mit einem klaren Ablauf von der Anfrage bis zur fertigen Datei.
-        </p>
-
-        <div class="cinema-actions">
-          <button class="primary-btn cinema-btn" onclick="publicNavigate('order')">Projekt starten <span>→</span></button>
-          <button class="cinema-outline-btn" onclick="publicNavigate('showcase')">Showcase ansehen</button>
+        <div class="home-v23-actions">
+          <button class="primary-btn home-v23-primary" onclick="publicNavigate('order')">Projekt starten <b>→</b></button>
+          <button class="home-v23-secondary" onclick="publicNavigate('showcase')">Showcase ansehen</button>
         </div>
 
-        <div class="cinema-benefits">
-          <div><b>◇</b><span><strong>100% Individuell</strong><small>Dein eigenes Design</small></span></div>
-          <div><b>ϟ</b><span><strong>Schnelle Umsetzung</strong><small>Zuverlässig & klar</small></span></div>
-          <div><b>⬡</b><span><strong>Hohe Qualität</strong><small>Optimiert für FiveM</small></span></div>
-          <div><b>◎</b><span><strong>Zufriedene Kunden</strong><small>Erfahrung & Vertrauen</small></span></div>
+        <div class="home-v23-benefits">
+          <div><span>◇</span><strong>100% Individuell</strong><small>Dein eigenes Design</small></div>
+          <div><span>ϟ</span><strong>Schnelle Umsetzung</strong><small>Zuverlässig & klar</small></div>
+          <div><span>⬡</span><strong>Hohe Qualität</strong><small>Optimiert für FiveM</small></div>
+          <div><span>◎</span><strong>Klare Abwicklung</strong><small>Status jederzeit sichtbar</small></div>
         </div>
       </div>
 
-      <div class="cinema-right-mark" aria-hidden="true">
-        <span>FIVEM</span><span>CUSTOM</span><span>DESIGN</span>
-      </div>
-
-      <div class="cinema-quality" aria-hidden="true">
-        <span>QUALITY</span><span>DETAILS</span><span>IDENTITY</span>
+      <div class="home-v23-brandbox">
+        <img src="/assets/konya-logo.png" alt="Konya Clothing Logo">
+        <span>MORE THAN</span>
+        <strong>CLOTHING</strong>
+        <i></i>
       </div>
     </section>
 
-    <section class="cinema-stats" aria-label="Konya Clothing Kennzahlen">
-      <div><span class="stat-icon">▣</span><strong>${state.showcase.length}+</strong><small>DESIGNS</small></div>
-      <div><span class="stat-icon">◉</span><strong>${state.customers.length}</strong><small>KUNDEN</small></div>
-      <div><span class="stat-icon">▤</span><strong>${state.orders.length}</strong><small>AUFTRÄGE</small></div>
-      <div><span class="stat-icon">◷</span><strong>48h</strong><small>EXPRESS MÖGLICH</small></div>
-      <div class="cinema-partner"><span>Dein Partner für</span><strong>Custom FiveM Clothing.</strong><i></i></div>
+    <section class="home-v23-stats">
+      <article><span>▣</span><strong>${state.showcase.length}+</strong><small>DESIGNS</small></article>
+      <article><span>◎</span><strong>${state.customers.length}</strong><small>KUNDEN</small></article>
+      <article><span>▤</span><strong>${state.orders.length}</strong><small>AUFTRÄGE</small></article>
+      <article><span>◷</span><strong>48h</strong><small>EXPRESS MÖGLICH</small></article>
+      <div class="home-v23-stat-copy"><span>Dein Partner für</span><strong>Custom FiveM Clothing.</strong><i></i></div>
     </section>
 
-    <section class="cinema-services">
-      <div class="cinema-services-head">
+    <section class="home-v23-section">
+      <div class="home-v23-section-head">
         <div>
-          <span class="cinema-kicker">UNSERE LEISTUNGEN</span>
-          <h2>Alles, was dein<br><span>Clothing-Projekt braucht.</span></h2>
+          <span class="home-v23-eyebrow">UNSERE LEISTUNGEN</span>
+          <h2>Alles, was dein<br><em>Clothing-Projekt braucht.</em></h2>
         </div>
-        <div class="cinema-services-copy">
-          <p>Von individuellen Outfits bis zu kompletten Kollektionen – wir setzen deine Ideen sauber, professionell und zuverlässig um.</p>
-          <button class="cinema-outline-btn" onclick="publicNavigate('prices')">Alle Leistungen ansehen <span>→</span></button>
+        <div class="home-v23-head-copy">
+          <p>Von einzelnen Kleidungsstücken bis zu kompletten Outfit-Sets: Du bekommst Planung, Design und Überarbeitung aus einer Hand.</p>
+          <button class="home-v23-link" onclick="publicNavigate('prices')">Alle Leistungen ansehen →</button>
         </div>
       </div>
 
-      <div class="cinema-service-grid">
-        <article><span>01</span><h3>Custom Clothing</h3><p>Einzelteile oder komplette Sets – individuell nach deinem Stil.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+      <div class="home-v23-service-grid">
+        <article><span>01</span><h3>Custom Clothing</h3><p>Individuelle Einzelteile und komplette Outfits nach deinem Stil.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
         <article><span>02</span><h3>Texture Rework</h3><p>Bestehende Texturen werden sauber überarbeitet und optimiert.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
-        <article><span>03</span><h3>Logo Integration</h3><p>Logos und Schriftzüge passend auf Kleidung umgesetzt.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
-        <article><span>04</span><h3>Komplette Outfits</h3><p>Zusammenhängende Looks für Teams, Firmen oder Gruppen.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+        <article><span>03</span><h3>Logo Integration</h3><p>Logos, Schriftzüge und Branding passend auf Kleidung umgesetzt.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+        <article><span>04</span><h3>Komplette Outfits</h3><p>Zusammenhängende Looks für Firmen, Teams und Gruppen.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
       </div>
     </section>
 
-    <section class="cinema-showcase-preview">
-      <div class="cinema-showcase-head">
-        <div><span class="cinema-kicker">SHOWCASE</span><h2>Ausgewählte Arbeiten.</h2></div>
-        <button class="cinema-outline-btn" onclick="publicNavigate('showcase')">Alle Designs <span>→</span></button>
+    <section class="home-v23-process">
+      <div class="home-v23-process-copy">
+        <span class="home-v23-eyebrow">ABLAUF</span>
+        <h2>Von der Idee bis zur fertigen Datei.</h2>
+        <p>Jeder Auftrag läuft nach demselben klaren System.</p>
+        <button class="home-v23-secondary" onclick="publicNavigate('order')">Auftrag starten</button>
       </div>
 
-      <div class="cinema-showcase-grid">
+      <div class="home-v23-process-list">
+        ${[
+          ["01","Anfrage","Du sendest Wunsch, Referenzen und Details."],
+          ["02","Preis","Wir prüfen Aufwand und stimmen den finalen Preis ab."],
+          ["03","Bearbeitung","Dein Design wird umgesetzt."],
+          ["04","Vorschau","Du erhältst eine Vorschau zur Kontrolle."],
+          ["05","Freigabe","Änderungen oder finale Bestätigung."],
+          ["06","Auslieferung","Du erhältst die fertigen Dateien."]
+        ].map(x=>`<article><span>${x[0]}</span><div><h3>${x[1]}</h3><p>${x[2]}</p></div></article>`).join("")}
+      </div>
+    </section>
+
+    <section class="home-v23-section">
+      <div class="home-v23-section-head compact">
+        <div>
+          <span class="home-v23-eyebrow">SHOWCASE</span>
+          <h2>Ausgewählte Arbeiten.</h2>
+        </div>
+        <button class="home-v23-link" onclick="publicNavigate('showcase')">Alle Designs →</button>
+      </div>
+
+      <div class="home-v23-showcase">
         ${featured.slice(0,3).map((x,i)=>`
           <article>
-            <div class="cinema-showcase-art art-${i+1}">
+            <div class="home-v23-showcase-art art-${i}">
               <span>${escapeHtml(x.category||"Custom")}</span>
-              <strong>${escapeHtml(x.name||x.title||"Konya Clothing")}</strong>
+              <div><small>KONYA CLOTHING</small><strong>${escapeHtml(x.name||x.title||"Design")}</strong></div>
             </div>
             <p>${escapeHtml(x.description||"Individuelles Clothing Design von Konya Clothing.")}</p>
           </article>`).join("")}
       </div>
     </section>
 
-    <section class="cinema-final">
+    <section class="home-v23-price">
       <div>
-        <span class="cinema-kicker">DEIN PROJEKT</span>
-        <h2>Bereit für dein eigenes Clothing?</h2>
-        <p>Starte deine Anfrage direkt online und behalte danach Preis, Status und Vorschau im Kundenbereich im Blick.</p>
+        <span class="home-v23-eyebrow">PREISE</span>
+        <h2>Klare Richtpreise,<br>bevor es losgeht.</h2>
+        <p>Du bekommst vor Bearbeitungsbeginn einen abgestimmten Endpreis.</p>
+        <button class="home-v23-secondary" onclick="publicNavigate('prices')">Komplette Preisliste</button>
       </div>
+
+      <div class="home-v23-price-list">
+        ${[
+          ["T-Shirt / Top","5–8 €"],
+          ["Hoodie / Pullover","8–12 €"],
+          ["Jacke / Mantel","12–18 €"],
+          ["Hose / Jeans","8–12 €"],
+          ["Custom-Outfit","40–70 €"]
+        ].map((x,i)=>`<div><span>${String(i+1).padStart(2,"0")}</span><strong>${x[0]}</strong><b>${x[1]}</b></div>`).join("")}
+      </div>
+    </section>
+
+    <section class="home-v23-final">
       <div>
-        <button class="primary-btn cinema-btn" onclick="publicNavigate('order')">Auftrag anfragen <span>→</span></button>
-        <a class="cinema-outline-btn" href="/kundenbereich">Auftrag verfolgen</a>
+        <span class="home-v23-eyebrow">DEIN PROJEKT</span>
+        <h2>Bereit für dein eigenes Clothing?</h2>
+        <p>Starte deine Anfrage online und verfolge danach Status, Preis und Vorschau im Kundenbereich.</p>
+      </div>
+      <div class="home-v23-final-actions">
+        <button class="primary-btn home-v23-primary" onclick="publicNavigate('order')">Auftrag anfragen <b>→</b></button>
+        <a class="home-v23-secondary" href="/kundenbereich">Auftrag verfolgen</a>
       </div>
     </section>`;
 
