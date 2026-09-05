@@ -1,22 +1,22 @@
-# Konya Clothing V3.15 – Public Experience Redesign
+# Konya Clothing V3.16 – Studio Minimal
 
-Diesmal wurde vor allem die Hauptseite deutlich stärker verändert.
+Komplett neuer Stil für die gesamte Website.
 
 ## Die 5 großen Änderungen
 
-1. **Neue Startseite mit stärkerem Hero**
-   Großes Branding, klare Handlungsbuttons, Schnellstart für Kunden und kompakte Kennzahlen.
+1. **Neues Studio-Layout**
+   Deutlich ruhiger, minimalistischer und hochwertiger als die bisherigen Dashboard-/Card-Designs.
 
-2. **Leistungen und Ablauf komplett neu aufgebaut**
-   Weniger Karten-Chaos, klare visuelle Hierarchie und ein moderner 6-Schritte-Prozess.
+2. **Komplett neuer Startbereich**
+   Editorial Hero, großes Branding, Kennzahlen und visuelle Bannerfläche.
 
-3. **Showcase stärker gemacht**
-   Größere Designflächen, Kategorien-Filter und direkter Button „Ähnliches anfragen“.
+3. **Neue Inhaltsstruktur**
+   Leistungen, Ablauf, Showcase und Preise wurden in klare horizontale Bereiche mit Nummerierung aufgeteilt.
 
-4. **Preise und Auftragsseite verbessert**
-   Beliebte Leistungen werden markiert, Preisablauf erklärt und das Auftragsformular in klare Bereiche geteilt.
+4. **Showcase und Preise komplett neu gestaltet**
+   Größere Designflächen, weniger Boxen, klare Typografie und schnell erfassbare Preise.
 
-5. **Abschlussbereich + Responsive Design**
-   Stärkerer Call-to-Action am Seitenende und bessere Darstellung auf Tablet und Smartphone.
+5. **Adminbereich ebenfalls neu gestylt**
+   Flachere Navigation, kompaktere Karten, weniger Rundungen und deutlich reduziertere Optik.
 
-Adminbereich, PostgreSQL-Backend, Kundenbereich und vorhandene Funktionen bleiben erhalten.
+Alle bestehenden Funktionen, PostgreSQL, Kundenbereich und Routen bleiben erhalten.

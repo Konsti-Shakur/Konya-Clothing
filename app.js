@@ -671,123 +671,224 @@ function renderPublicPage(page){
     return;
   }
 
-  const featured=state.showcase.slice(0,4);
-  const newestOrders=state.orders.slice(0,3);
+  const featured=state.showcase.slice(0,6);
 
   container.innerHTML=`
-    <section class="home-hero-v3">
-      <div class="home-hero-bg"></div>
-      <div class="home-hero-copy">
-        <div class="public-brand-chip"><img src="/assets/konya-logo.png" alt="Konya Clothing Logo"><span>Konya Clothing</span></div>
-        <span class="eyebrow">CUSTOM FIVEM CLOTHING</span>
-        <h1>Dein Projekt.<br><em>Dein Style.</em></h1>
-        <p>Custom Clothing, Texture Reworks und individuelle Designs für FiveM – übersichtlich geplant, sauber umgesetzt und transparent abgewickelt.</p>
-        <div class="home-hero-actions">
-          <button class="primary-btn hero-main-btn" onclick="publicNavigate('order')">Auftrag starten</button>
-          <button class="secondary-btn hero-main-btn" onclick="publicNavigate('showcase')">Arbeiten ansehen</button>
+    <section class="studio-hero">
+      <div class="studio-hero-copy">
+        <div class="studio-kicker">
+          <span class="studio-dot"></span>
+          <span>KONYA CLOTHING · FIVEM CUSTOM DESIGN</span>
         </div>
-        <div class="hero-proof">
+
+        <h1>Custom Clothing.<br><span>Sauber. Klar. Eigen.</span></h1>
+
+        <p class="studio-lead">
+          Individuelle FiveM-Kleidung, Texture Reworks und Branding –
+          mit einem klaren Ablauf von der Anfrage bis zur fertigen Datei.
+        </p>
+
+        <div class="studio-hero-actions">
+          <button class="primary-btn studio-main-btn" onclick="publicNavigate('order')">Projekt starten</button>
+          <button class="studio-link-btn" onclick="publicNavigate('showcase')">Showcase ansehen <span>→</span></button>
+        </div>
+
+        <div class="studio-metrics">
           <div><strong>${state.showcase.length}+</strong><span>Designs</span></div>
           <div><strong>${state.customers.length}</strong><span>Kunden</span></div>
-          <div><strong>48h</strong><span>Express möglich</span></div>
+          <div><strong>${state.orders.length}</strong><span>Aufträge</span></div>
         </div>
       </div>
-      <div class="home-hero-panel">
-        <span class="eyebrow">SCHNELLSTART</span>
-        <h3>Was möchtest du machen?</h3>
-        <button onclick="publicNavigate('order')"><span>01</span><div><strong>Neues Clothing</strong><small>Komplett neu gestalten</small></div><b>→</b></button>
-        <button onclick="publicNavigate('order')"><span>02</span><div><strong>Texture Rework</strong><small>Bestehende Textur verbessern</small></div><b>→</b></button>
-        <button onclick="publicNavigate('order')"><span>03</span><div><strong>Logo Integration</strong><small>Logo sauber platzieren</small></div><b>→</b></button>
+
+      <div class="studio-hero-visual">
+        <div class="studio-visual-frame">
+          <img src="/assets/konya-banner.png" alt="Konya Clothing">
+          <div class="studio-visual-overlay">
+            <span>Konya Clothing</span>
+            <strong>Custom Design Studio</strong>
+          </div>
+        </div>
+
+        <div class="studio-float-card studio-float-top">
+          <span>Express</span>
+          <strong>48h</strong>
+        </div>
+
+        <div class="studio-float-card studio-float-bottom">
+          <span>Workflow</span>
+          <strong>6 klare Schritte</strong>
+        </div>
       </div>
     </section>
 
-    <section class="home-trust-strip">
-      <div><span>✓</span><strong>Klare Preise</strong><small>vor Bearbeitungsstart</small></div>
-      <div><span>✓</span><strong>Vorschau</strong><small>vor finaler Freigabe</small></div>
-      <div><span>✓</span><strong>Änderungen</strong><small>sauber dokumentiert</small></div>
-      <div><span>✓</span><strong>Kundenbereich</strong><small>Status jederzeit einsehbar</small></div>
+    <section class="studio-strip">
+      <span>Custom Clothing</span>
+      <i></i>
+      <span>Texture Rework</span>
+      <i></i>
+      <span>Logo Integration</span>
+      <i></i>
+      <span>Outfit Sets</span>
+      <i></i>
+      <span>FiveM Ready</span>
     </section>
 
-    <section class="site-section home-intro-grid">
-      <div class="public-section-head">
-        <span class="eyebrow">LEISTUNGEN</span>
-        <h2>Alles rund um dein FiveM Clothing.</h2>
-        <p>Du brauchst nicht mehrere Ansprechpartner. Wir bündeln Design, Rework, Logos und komplette Outfit-Projekte an einem Ort.</p>
-        <button class="text-link-btn large-link" onclick="publicNavigate('prices')">Preise ansehen →</button>
+    <section class="studio-section studio-services">
+      <div class="studio-section-label">
+        <span>01</span>
+        <p>Leistungen</p>
       </div>
-      <div class="service-stack">
-        <article><span>01</span><div><h3>Custom Clothing</h3><p>Individuelle Einzelteile und komplette Outfits nach deinem Stil.</p></div></article>
-        <article><span>02</span><div><h3>Texture Rework</h3><p>Unscharfe oder alte Texturen werden sauber neu aufgebaut.</p></div></article>
-        <article><span>03</span><div><h3>Logo & Branding</h3><p>Logos, Schriftzüge und Branding passend auf Kleidung integriert.</p></div></article>
-      </div>
-    </section>
 
-    <section class="site-section process-v3">
-      <div class="public-section-head public-section-head-row">
-        <div><span class="eyebrow">ABLAUF</span><h2>Ein klarer Prozess statt Chaos.</h2><p>Du weißt bei jedem Schritt, was gerade passiert.</p></div>
-        <button class="secondary-btn" onclick="publicNavigate('order')">Auftrag starten</button>
-      </div>
-      <div class="process-line">
-        ${[
-          ["01","Anfrage","Wünsche + Referenzen"],
-          ["02","Preis","Aufwand + Fixpreis"],
-          ["03","Design","Umsetzung durch Designer"],
-          ["04","Vorschau","Prüfen + Änderungswunsch"],
-          ["05","Freigabe","Final bestätigen"],
-          ["06","Auslieferung","Dateien erhalten"]
-        ].map((x,i)=>`
-          <div class="process-node">
-            <div class="node-top"><span>${x[0]}</span>${i<5?'<i></i>':""}</div>
-            <h3>${x[1]}</h3>
-            <p>${x[2]}</p>
-          </div>`).join("")}
-      </div>
-    </section>
+      <div class="studio-section-content">
+        <div class="studio-section-head">
+          <h2>Alles, was dein Clothing-Projekt braucht.</h2>
+          <p>Weniger Klicks, weniger Chaos. Du wählst, was du brauchst – wir kümmern uns um den Rest.</p>
+        </div>
 
-    <section class="site-section">
-      <div class="public-section-head public-section-head-row">
-        <div><span class="eyebrow">SHOWCASE</span><h2>Aktuelle Arbeiten.</h2><p>Ein direkter Blick auf verschiedene Stilrichtungen.</p></div>
-        <button class="secondary-btn" onclick="publicNavigate('showcase')">Komplettes Showcase</button>
-      </div>
-      <div class="showcase-feature-grid">
-        ${featured.map((x,i)=>`
-          <article class="showcase-feature-card ${i===0?"featured":""}">
-            <div class="showcase-feature-art ${i%2===0?"alt":""}">
-              <span class="showcase-badge">${escapeHtml(x.category||"Custom")}</span>
-              <div><small>Konya Clothing</small><strong>${escapeHtml(x.name||x.title||"Design")}</strong></div>
+        <div class="studio-service-list">
+          <article>
+            <div class="studio-service-index">01</div>
+            <div>
+              <h3>Custom Clothing</h3>
+              <p>Komplett neue Designs für einzelne Teile oder ganze Outfits.</p>
             </div>
-            <div class="showcase-feature-copy">
-              <p>${escapeHtml(x.description||"Individuelles Clothing Design.")}</p>
-              <button class="text-link-btn" onclick="publicNavigate('order')">Ähnliches anfragen →</button>
+            <button onclick="publicNavigate('order')">Anfragen →</button>
+          </article>
+
+          <article>
+            <div class="studio-service-index">02</div>
+            <div>
+              <h3>Texture Rework</h3>
+              <p>Bestehende Texturen werden sauber neu aufgebaut und optimiert.</p>
             </div>
-          </article>`).join("")}
+            <button onclick="publicNavigate('order')">Anfragen →</button>
+          </article>
+
+          <article>
+            <div class="studio-service-index">03</div>
+            <div>
+              <h3>Logo & Branding</h3>
+              <p>Logos, Schriftzüge und Farben passend in dein Clothing integriert.</p>
+            </div>
+            <button onclick="publicNavigate('order')">Anfragen →</button>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="site-section home-pricing-preview">
-      <div class="pricing-preview-copy">
-        <span class="eyebrow">PREISE</span>
-        <h2>Schnell wissen, womit du rechnen kannst.</h2>
-        <p>Unsere Richtpreise geben dir sofort eine Orientierung. Den finalen Preis bestätigen wir vor Beginn.</p>
-        <button class="secondary-btn" onclick="publicNavigate('prices')">Alle Preise</button>
+    <section class="studio-section studio-process">
+      <div class="studio-section-label">
+        <span>02</span>
+        <p>Ablauf</p>
       </div>
-      <div class="pricing-preview-list">
-        ${[["T-Shirt / Top","5–8 €"],["Hoodie / Pullover","8–12 €"],["Hose / Jeans","8–12 €"],["Custom-Outfit","40–70 €"],["Einsatzkleidung","45–80 €"]].map((x,i)=>`
-          <div><span>${String(i+1).padStart(2,"0")}</span><strong>${x[0]}</strong><b>${x[1]}</b></div>`).join("")}
+
+      <div class="studio-section-content">
+        <div class="studio-section-head horizontal">
+          <div>
+            <h2>Ein Ablauf, den du sofort verstehst.</h2>
+            <p>Jeder Auftrag folgt demselben klaren System.</p>
+          </div>
+          <button class="secondary-btn" onclick="publicNavigate('order')">Auftrag starten</button>
+        </div>
+
+        <div class="studio-process-list">
+          ${[
+            ["01","Anfrage","Du schickst Wunsch, Referenzen und Details."],
+            ["02","Preis","Wir prüfen Aufwand und nennen dir den finalen Preis."],
+            ["03","Bearbeitung","Dein Designer setzt den Auftrag um."],
+            ["04","Vorschau","Du erhältst eine Vorschau zur Kontrolle."],
+            ["05","Freigabe","Du bestätigst oder meldest Änderungen."],
+            ["06","Auslieferung","Du erhältst deine finalen Dateien."]
+          ].map(x=>`
+            <article>
+              <span>${x[0]}</span>
+              <div><h3>${x[1]}</h3><p>${x[2]}</p></div>
+            </article>`).join("")}
+        </div>
       </div>
     </section>
 
-    <section class="home-final-cta">
-      <div class="home-final-copy">
-        <span class="eyebrow">KONYA CLOTHING</span>
-        <h2>Aus deiner Idee wird ein fertiges Design.</h2>
-        <p>Starte deine Anfrage direkt online und behalte danach Status, Preis und Vorschau im Blick.</p>
+    <section class="studio-section studio-showcase">
+      <div class="studio-section-label">
+        <span>03</span>
+        <p>Showcase</p>
       </div>
-      <div class="home-final-actions">
-        <button class="primary-btn hero-main-btn" onclick="publicNavigate('order')">Auftrag anfragen</button>
-        <a class="secondary-btn hero-main-btn" href="/kundenbereich">Auftrag verfolgen</a>
+
+      <div class="studio-section-content">
+        <div class="studio-section-head horizontal">
+          <div>
+            <h2>Ausgewählte Arbeiten.</h2>
+            <p>Ein kompakter Blick auf unterschiedliche Styles.</p>
+          </div>
+          <button class="studio-link-btn" onclick="publicNavigate('showcase')">Alle Designs <span>→</span></button>
+        </div>
+
+        <div class="studio-showcase-grid">
+          ${featured.map((x,i)=>`
+            <article class="studio-showcase-card ${i===0?'wide':''}">
+              <div class="studio-showcase-art">
+                <span class="studio-tag">${escapeHtml(x.category||"Custom")}</span>
+                <div class="studio-art-index">${String(i+1).padStart(2,"0")}</div>
+                <div class="studio-art-title">
+                  <small>KONYA CLOTHING</small>
+                  <strong>${escapeHtml(x.name||x.title||"Design")}</strong>
+                </div>
+              </div>
+              <div class="studio-showcase-copy">
+                <p>${escapeHtml(x.description||"Individuelles Clothing Design von Konya Clothing.")}</p>
+                <button onclick="publicNavigate('order')">Ähnliches anfragen →</button>
+              </div>
+            </article>`).join("")}
+        </div>
+      </div>
+    </section>
+
+    <section class="studio-section studio-price-preview">
+      <div class="studio-section-label">
+        <span>04</span>
+        <p>Preise</p>
+      </div>
+
+      <div class="studio-section-content">
+        <div class="studio-price-wrap">
+          <div class="studio-price-intro">
+            <span class="eyebrow">RICHTPREISE</span>
+            <h2>Schnell wissen, was dich erwartet.</h2>
+            <p>Die wichtigsten Leistungen auf einen Blick. Der endgültige Preis wird vor Beginn bestätigt.</p>
+            <button class="secondary-btn" onclick="publicNavigate('prices')">Komplette Preisliste</button>
+          </div>
+
+          <div class="studio-price-list">
+            ${[
+              ["T-Shirt / Top","5–8 €"],
+              ["Hoodie / Pullover","8–12 €"],
+              ["Jacke / Mantel","12–18 €"],
+              ["Hose / Jeans","8–12 €"],
+              ["Custom-Outfit","40–70 €"]
+            ].map((x,i)=>`
+              <div>
+                <span>${String(i+1).padStart(2,"0")}</span>
+                <strong>${x[0]}</strong>
+                <b>${x[1]}</b>
+              </div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="studio-final">
+      <div>
+        <span class="studio-kicker"><span class="studio-dot"></span><span>DEIN NÄCHSTES PROJEKT</span></span>
+        <h2>Bereit für dein eigenes Clothing?</h2>
+        <p>Starte deine Anfrage online und behalte danach alles im Kundenbereich im Blick.</p>
+      </div>
+
+      <div class="studio-final-actions">
+        <button class="primary-btn studio-main-btn" onclick="publicNavigate('order')">Auftrag anfragen</button>
+        <a class="secondary-btn studio-main-btn" href="/kundenbereich">Auftrag verfolgen</a>
       </div>
     </section>`;
+
 }
 
 window.filterShowcasePublic=function(category,btn){
