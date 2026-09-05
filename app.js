@@ -439,9 +439,26 @@ function publicView(){
           <a href="/kundenbereich" onclick="">Kundenbereich</a>
         </nav>
 
-        <div class="site-header-actions">
-          <a class="secondary-btn site-login" href="/admin">Admin</a>
-          <a class="primary-btn" href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+        <div class="site-header-actions premium-header-actions">
+          <span class="header-action-divider" aria-hidden="true"></span>
+
+          <a class="header-admin-btn" href="/admin" title="Adminbereich">
+            <span class="header-admin-icon" aria-hidden="true">⚙</span>
+            <span>Admin</span>
+          </a>
+
+          <a class="header-order-btn" href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">
+            <span class="header-order-icon" aria-hidden="true">▤</span>
+            <span>Auftrag anfragen</span>
+            <span class="header-order-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <span class="header-action-divider" aria-hidden="true"></span>
+
+          <a class="header-profile-btn" href="/kundenbereich" title="Kundenbereich">
+            <img src="/assets/konya-logo.png" alt="Konya Clothing">
+            <span class="header-profile-chevron" aria-hidden="true">⌄</span>
+          </a>
         </div>
 
         <button class="mobile-menu-btn" onclick="togglePublicMenu()" aria-label="Menü">☰</button>
