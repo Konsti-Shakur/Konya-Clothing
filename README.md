@@ -1,12 +1,22 @@
-# Konya Clothing V3.12 – Homepage Redesign
+# Konya Clothing V3.13 – Modernes Control-Center Design
 
-Die öffentliche Homepage wurde komplett übersichtlicher aufgebaut.
+Die Seite wurde optisch komplett vereinheitlicht und übersichtlicher gemacht.
 
-Die 5 wichtigsten Änderungen:
-1. Neuer großer Hero-Bereich mit Banner, Logo und klaren Aktionen.
-2. Leistungen kompakt in drei gut lesbaren Karten.
-3. Der komplette Auftragsablauf in sechs klaren Schritten.
-4. Neues Showcase-Raster mit ausgewählten Arbeiten.
-5. Kompakte Preisübersicht plus große Abschluss-CTA für neue Aufträge.
+Die 5 großen Design-Schritte:
 
-Das Railway-/PostgreSQL-Backend aus V3.11 bleibt erhalten.
+1. **Neue Sidebar + Topbar**
+   Ruhigeres Layout, bessere aktive Navigation, moderner Benutzerbereich und Datenbankstatus.
+
+2. **Dashboard neu strukturiert**
+   Klarere KPI-Karten, weniger visuelles Chaos und bessere Abstände.
+
+3. **Tabellen, Formulare und Modale überarbeitet**
+   Einheitliche Eingaben, sauberere Tabellen, bessere Status-Badges und modernere Dialoge.
+
+4. **Öffentliche Homepage verfeinert**
+   Premium-Optik, kompaktere Bereiche und bessere visuelle Hierarchie.
+
+5. **Responsive Design verbessert**
+   Desktop, Tablet und Handy sind übersichtlicher und besser nutzbar.
+
+Alle Funktionen, PostgreSQL-Anbindung und bisherigen Datenstrukturen bleiben erhalten.
