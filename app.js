@@ -224,15 +224,71 @@ function dashboard(){
 function genericTable(view){
   const configs={
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
-    orders:{t:"Aufträge",s:"Anfrage, Preis, Zahlung und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Priorität","Organisation","Leistung","Richtpreis","Endpreis","Zahlung","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,`<span class="status ${x.priority==="Dringend"?"danger":x.priority==="Hoch"?"wait":"new"}">${x.priority}</span>`,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${paymentClass(x.paymentStatus)}">${x.paymentStatus}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
     customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
     tickets:{t:"Tickets",s:"Support, Änderungswünsche und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[x.id,x.title,x.client,x.priority,`<span class="status ${statusClass(x.priority==="Dringend"?"Dringend":x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
     employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
   };
+  if(view==="orders") return renderOrdersTable();
   const c=configs[view]; title.textContent=c.t; subtitle.textContent=c.s;
   root.innerHTML=`<div class="toolbar"><div class="toolbar-left"><input class="field" id="tableSearch" placeholder="Suchen ..."></div><div class="toolbar-right"><button class="primary-btn" onclick="${c.action}">${c.btn}</button></div></div>
   <div class="panel"><div class="panel-body table-wrap"><table id="mainTable"><thead><tr>${c.headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${c.rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
   document.getElementById("tableSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();[...document.querySelectorAll("#mainTable tbody tr")].forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?"":"none")});
+}
+
+function renderOrdersTable(){
+  title.textContent="Aufträge";
+  subtitle.textContent="Schneller filtern, sortieren und wichtige Aufträge sofort finden.";
+  const statuses=[...new Set(state.orders.map(o=>o.status))];
+  const designers=[...new Set(state.orders.map(o=>o.designer))];
+  root.innerHTML=`
+    <div class="order-filter-bar">
+      <input class="field" id="orderSearch" placeholder="Auftrag, Kunde oder Organisation suchen ...">
+      <select class="field" id="filterStatus"><option value="">Alle Status</option>${statuses.map(s=>`<option>${s}</option>`).join("")}</select>
+      <select class="field" id="filterPriority"><option value="">Alle Prioritäten</option>${["Niedrig","Normal","Hoch","Dringend"].map(s=>`<option>${s}</option>`).join("")}</select>
+      <select class="field" id="filterDesigner"><option value="">Alle Designer</option>${designers.map(s=>`<option>${s}</option>`).join("")}</select>
+      <select class="field" id="filterPayment"><option value="">Alle Zahlungen</option>${["Nicht berechnet","Zahlung offen","Bezahlt","Storniert"].map(s=>`<option>${s}</option>`).join("")}</select>
+      <select class="field" id="orderSort"><option value="newest">Neueste zuerst</option><option value="deadline">Deadline zuerst</option><option value="priority">Priorität</option><option value="progress">Fortschritt</option></select>
+      <button class="secondary-btn" onclick="resetOrderFilters()">Filter zurücksetzen</button>
+      <button class="primary-btn" onclick="openOrderModal()">+ Auftrag</button>
+    </div>
+    <div class="order-filter-summary" id="orderFilterSummary"></div>
+    <div class="panel"><div class="panel-body table-wrap"><table id="ordersTable"><thead><tr>
+      <th>Auftrag</th><th>Kunde</th><th>Priorität</th><th>Organisation</th><th>Leistung</th><th>Endpreis</th><th>Zahlung</th><th>Status</th><th>Designer</th><th>Deadline</th><th>Fortschritt</th>
+    </tr></thead><tbody id="ordersTableBody"></tbody></table></div></div>`;
+  ["orderSearch","filterStatus","filterPriority","filterDesigner","filterPayment","orderSort"].forEach(id=>document.getElementById(id).addEventListener(id==="orderSearch"?"input":"change",applyOrderFilters));
+  applyOrderFilters();
+}
+
+window.applyOrderFilters=function(){
+  const q=(document.getElementById("orderSearch")?.value||"").toLowerCase();
+  const status=document.getElementById("filterStatus")?.value||"";
+  const priority=document.getElementById("filterPriority")?.value||"";
+  const designer=document.getElementById("filterDesigner")?.value||"";
+  const payment=document.getElementById("filterPayment")?.value||"";
+  const sort=document.getElementById("orderSort")?.value||"newest";
+  let rows=state.orders.filter(o=>{
+    const text=`${o.id} ${o.client} ${o.organization||""} ${o.type}`.toLowerCase();
+    return (!q||text.includes(q))&&(!status||o.status===status)&&(!priority||o.priority===priority)&&(!designer||o.designer===designer)&&(!payment||o.paymentStatus===payment);
+  });
+  const rank={Dringend:4,Hoch:3,Normal:2,Niedrig:1};
+  if(sort==="deadline") rows.sort((a,b)=>String(a.deadline||"9999").localeCompare(String(b.deadline||"9999")));
+  else if(sort==="priority") rows.sort((a,b)=>(rank[b.priority]||0)-(rank[a.priority]||0));
+  else if(sort==="progress") rows.sort((a,b)=>(b.progress||0)-(a.progress||0));
+  const tbody=document.getElementById("ordersTableBody");
+  tbody.innerHTML=rows.map(x=>`<tr>
+    <td><b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b></td>
+    <td>${x.client}</td>
+    <td><span class="status ${x.priority==="Dringend"?"danger":x.priority==="Hoch"?"wait":"new"}">${x.priority}</span></td>
+    <td>${x.organization||"Privat"}</td><td>${x.type}</td><td>${x.finalPrice?eur(x.finalPrice):"Offen"}</td>
+    <td><span class="status ${paymentClass(x.paymentStatus)}">${x.paymentStatus}</span></td>
+    <td><span class="status ${statusClass(x.status)}">${x.status}</span></td><td>${x.designer}</td><td>${x.deadline}</td>
+    <td><div class="mini-progress"><span style="width:${x.progress||0}%"></span></div><small>${x.progress||0}%</small></td>
+  </tr>`).join("") || `<tr><td colspan="11"><div class="empty">Keine Aufträge für diese Filter gefunden.</div></td></tr>`;
+  document.getElementById("orderFilterSummary").innerHTML=`<span><b>${rows.length}</b> von ${state.orders.length} Aufträgen</span><span>${rows.filter(o=>o.priority==="Dringend").length} dringend</span><span>${rows.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</span>`;
+}
+window.resetOrderFilters=function(){
+  ["orderSearch","filterStatus","filterPriority","filterDesigner","filterPayment"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+  const sort=document.getElementById("orderSort");if(sort)sort.value="newest";applyOrderFilters();
 }
 
 function pricingView(){

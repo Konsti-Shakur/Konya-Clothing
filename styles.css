@@ -406,3 +406,13 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
 
 #progressInput{accent-color:#24d7d1}
 .detail-card textarea{min-height:100px;resize:vertical;background:#0a1012;color:#fff;border:1px solid #23353a;border-radius:9px;padding:10px}
+
+.order-filter-bar{display:grid;grid-template-columns:minmax(220px,1.6fr) repeat(5,minmax(125px,.8fr)) auto auto;gap:8px;margin-bottom:10px;align-items:center}
+.order-filter-summary{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.order-filter-summary span{border:1px solid var(--line);background:#0a1113;border-radius:999px;padding:7px 10px;font-size:11px;color:var(--muted)}
+.order-filter-summary b{color:#fff}
+.mini-progress{width:95px;height:6px;background:#111c1f;border-radius:999px;overflow:hidden;display:inline-block;margin-right:7px;vertical-align:middle}
+.mini-progress span{display:block;height:100%;background:#22d7d2}
+#ordersTable td small{color:var(--muted);font-size:10px}
+@media(max-width:1350px){.order-filter-bar{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.order-filter-bar{grid-template-columns:1fr}.mini-progress{width:70px}}

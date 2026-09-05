@@ -1,11 +1,11 @@
-# Konya Clothing V3.6 – Admin-Auftragsverwaltung
+# Konya Clothing V3.7 – Auftragsfilter & Sortierung
 
-Die nächsten 5 Schritte wurden eingebaut:
+Die nächsten 5 Schritte:
 
-1. Designer direkt im Auftrag zuweisen oder wechseln.
-2. Priorität setzen: Niedrig, Normal, Hoch, Dringend.
-3. Status und Deadline zentral bearbeiten.
-4. Fortschritt per Regler von 0 bis 100 % setzen.
-5. Interne Notizen speichern, die nur für die Admin-/Mitarbeiteransicht gedacht sind.
+1. Aufträge nach Status filtern.
+2. Nach Priorität filtern.
+3. Nach Designer filtern.
+4. Nach Zahlungsstatus filtern.
+5. Sortierung nach Deadline, Priorität oder Fortschritt plus kombinierte Suche.
 
-Zusätzlich werden Änderungen im Auftragsverlauf und Protokoll festgehalten.
+Zusätzlich zeigt eine kleine Zusammenfassung sofort Trefferzahl, dringende Aufträge und offene Zahlungen.
