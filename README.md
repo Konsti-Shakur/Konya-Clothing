@@ -1,11 +1,13 @@
-# Konya Clothing V3.4.2 – Navigation Fix
+# Konya Clothing V3.5 – Kundenbereich
 
-Dieser kleine Fix macht nur den V3.4-Bereich eindeutig sichtbar:
+Die nächsten 5 Schritte wurden eingebaut:
 
-1. „Benachrichtigungen“ wird fest direkt nach „Protokoll“ in die Sidebar eingefügt.
-2. Die Benachrichtigungsseite ist mit der Navigation verbunden.
-3. Unten beim Admin wird die Build-Version V3.4.2 sichtbar angezeigt.
-4. Der Browser-Titel enthält ebenfalls V3.4.2 zur Kontrolle.
-5. Alle bisherigen Funktionen und Datenmigrationen aus V3.0–V3.4.1 bleiben enthalten.
+1. Kunden können ihren Auftrag über die Auftragsnummer suchen.
+2. Der Kundenbereich zeigt mehrere Aufträge desselben Kunden.
+3. Fortschritt wird als Prozentwert mit Balken angezeigt.
+4. Preisangebot, Designer, Deadline, Zahlung und Vorschau stehen zentral in einer Ansicht.
+5. Ein vollständiger Auftragsverlauf zeigt Preisangebote, Vorschauen, Freigaben, Änderungen und Zahlungen.
 
-Nach Push zu GitHub und Railway bitte Strg+F5 drücken.
+Hinweis:
+Der Zugriff läuft in dieser Zwischenversion nur über die Auftragsnummer und localStorage.
+Ein echter Login mit Datenbank kommt später.

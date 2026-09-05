@@ -89,6 +89,13 @@ state.orders.forEach(o=>{
   if(o.paidAt===undefined) o.paidAt = "";
   if(o.invoiceNote===undefined) o.invoiceNote = "";
 });
+state.orders.forEach(o=>{
+  if(!o.customerCode) o.customerCode=o.id;
+  if(!o.history) o.history=[
+    {label:"Auftrag erstellt",date:"04.09.2026"},
+    {label:o.status||"Anfrage",date:"04.09.2026"}
+  ];
+});
 // V3.4.1 migration: repair the known demo hoodie order if an older localStorage version stored 5 €.
 const demoHoodie=state.orders.find(o=>o.id==="KC-2026-0042" && o.type==="Hoodie / Pullover");
 if(demoHoodie){
@@ -269,33 +276,89 @@ function publicView(){
 }
 
 function customerArea(){
-  title.textContent="Kundenbereich"; subtitle.textContent="Auftragsstatus, Preisangebot, Vorschau und Freigabe.";
-  const o=state.orders[0];
-  root.innerHTML=`<div class="customer-hero"><div class="eyebrow">MEIN AUFTRAG</div><h2 style="margin:0">${o.id} · ${o.type}</h2><p style="color:var(--muted)">${o.client} · ${o.organization}</p>
-  <div class="step-row">${["Anfrage","Preisangebot","Angenommen","In Bearbeitung","Vorschau","Ausgeliefert"].map((s,i)=>`<div class="step ${i<=4?"active":""}">${s}</div>`).join("")}</div></div>
-  <div class="order-detail-grid" style="margin-top:18px">
-    <div class="detail-card"><h3>Auftragsdetails</h3>
-      <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
-      <div class="detail-row"><span>Leistung</span><b>${o.type}</b></div>
-      <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
-      <div class="detail-row"><span>Endpreis</span><b>${o.finalPrice?eur(o.finalPrice):"Noch offen"}</b></div>
-      <div class="detail-row"><span>Zahlung</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
-      <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
-      <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
-      <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
+  title.textContent="Kundenbereich";
+  subtitle.textContent="Aufträge per Auftragsnummer finden und vollständig verfolgen.";
+  root.innerHTML=`
+    <div class="panel"><div class="panel-head"><h3>Auftrag finden</h3><span>Kundenzugang</span></div>
+      <div class="panel-body">
+        <div class="customer-search-row">
+          <input class="field" id="customerOrderCode" placeholder="z. B. KC-2026-0042">
+          <button class="primary-btn" onclick="findCustomerOrder()">Auftrag anzeigen</button>
+        </div>
+        <div class="inline-note" style="margin-top:8px">Zum Testen kannst du aktuell eine vorhandene Auftragsnummer verwenden.</div>
+      </div>
     </div>
-    <div class="detail-card"><h3>Kundenvorschau</h3>
-      ${previewBlock(o)}
-      ${o.preview && o.approvalStatus!=="Freigegeben"?`
-        <div class="approval-actions">
-          <button class="primary-btn" onclick="approvePreview('${o.id}')">✓ Design freigeben</button>
-          <button class="secondary-btn" onclick="openChangeRequest('${o.id}')">✎ Änderung wünschen</button>
-        </div>`:""}
-      ${o.approvalStatus==="Freigegeben"?`<div class="approval-success">✓ Diese Vorschau wurde freigegeben.</div>`:""}
-      ${o.changeRequest?`<div class="change-request-box"><strong>Dein Änderungswunsch</strong><p>${o.changeRequest}</p></div>`:""}
-    </div>
-  </div>`;
+    <div id="customerOrderResult" style="margin-top:16px"></div>`;
 }
+window.findCustomerOrder=function(){
+  const q=(document.getElementById("customerOrderCode").value||"").trim().toUpperCase();
+  const o=state.orders.find(x=>(x.customerCode||x.id).toUpperCase()===q);
+  const result=document.getElementById("customerOrderResult");
+  if(!o){
+    result.innerHTML=`<div class="panel"><div class="panel-body"><div class="empty">Kein Auftrag mit dieser Nummer gefunden.</div></div></div>`;
+    return;
+  }
+  const myOrders=state.orders.filter(x=>x.client===o.client);
+  const progress=Math.max(0,Math.min(100,Number(o.progress||0)));
+  result.innerHTML=`
+    <div class="customer-hero">
+      <div class="eyebrow">MEIN AUFTRAG</div>
+      <h2 style="margin:0">${o.id} · ${o.type}</h2>
+      <p style="color:var(--muted)">${o.client} · ${o.organization||"Privat"}</p>
+      <div class="customer-progress-wrap"><div class="customer-progress-bar"><span style="width:${progress}%"></span></div><b>${progress}%</b></div>
+    </div>
+    <div class="order-detail-grid" style="margin-top:16px">
+      <div class="detail-card">
+        <h3>Auftragsstatus</h3>
+        <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
+        <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
+        <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
+        <div class="detail-row"><span>Preisangebot</span><b>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)} – ${eur(o.priceMax)}`}</b></div>
+        <div class="detail-row"><span>Zahlung</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
+        <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
+      </div>
+      <div class="detail-card">
+        <h3>Vorschau</h3>
+        ${previewBlock(o)}
+        ${o.preview && o.approvalStatus!=="Freigegeben"?`
+          <div class="approval-actions">
+            <button class="primary-btn" onclick="approvePreview('${o.id}');setTimeout(()=>findCustomerOrder(),0)">✓ Freigeben</button>
+            <button class="secondary-btn" onclick="openCustomerChangeRequest('${o.id}')">✎ Änderung wünschen</button>
+          </div>`:""}
+        ${o.approvalStatus==="Freigegeben"?`<div class="approval-success">✓ Vorschau freigegeben.</div>`:""}
+        ${o.changeRequest?`<div class="change-request-box"><strong>Änderungswunsch</strong><p>${o.changeRequest}</p></div>`:""}
+      </div>
+    </div>
+    <div class="grid two-col" style="margin-top:16px">
+      <div class="panel"><div class="panel-head"><h3>Auftragsverlauf</h3><span>${(o.history||[]).length} Einträge</span></div><div class="panel-body timeline">
+        ${(o.history||[]).map(h=>`<div class="timeline-item"><span class="timeline-dot"></span><div><b>${h.label}</b><small>${h.date}</small></div></div>`).join("")}
+      </div></div>
+      <div class="panel"><div class="panel-head"><h3>Weitere Aufträge</h3><span>${myOrders.length}</span></div><div class="panel-body">
+        ${myOrders.map(x=>`<button class="customer-order-link" onclick="document.getElementById('customerOrderCode').value='${x.id}';findCustomerOrder()"><span>${x.id}</span><b>${x.type}</b><small>${x.status}</small></button>`).join("")}
+      </div></div>
+    </div>`;
+};
+
+window.openCustomerChangeRequest=function(id){
+  const o=state.orders.find(x=>x.id===id);
+  modal(`<h2>Änderung wünschen</h2><p>Beschreibe genau, was an der Vorschau geändert werden soll.</p>
+    <form id="customerChangeForm">
+      <div class="form-group"><label>Änderungswunsch</label><textarea id="customerChangeText" required placeholder="z. B. Logo kleiner, Farbe dunkler ..."></textarea></div>
+      <div class="form-actions"><button type="button" class="secondary-btn" onclick="closeModal()">Abbrechen</button><button class="primary-btn">Senden</button></div>
+    </form>`);
+  document.getElementById("customerChangeForm").onsubmit=e=>{
+    e.preventDefault();
+    const text=document.getElementById("customerChangeText").value.trim();
+    o.changeRequest=text;
+    o.approvalStatus="Änderung gewünscht";
+    o.status="Änderung gewünscht";
+    o.history=o.history||[];
+    o.history.unshift({label:"Änderungswunsch gesendet",date:new Date().toLocaleDateString("de-DE")});
+    addNotification(`${id}: Neuer Änderungswunsch vom Kunden.`,"changeRequested");
+    state.logs.unshift(`${id}: Kunde hat einen Änderungswunsch gesendet`);
+    save();closeModal();findCustomerOrder();showToast("Änderungswunsch wurde gesendet.");
+  };
+};
 
 window.approvePreview=function(id){
   const o=state.orders.find(x=>x.id===id);
@@ -304,7 +367,7 @@ window.approvePreview=function(id){
   o.status="Freigegeben";
   o.progress=95;
   o.changeRequest="";
-  state.logs.unshift(`${id}: Kunde hat Vorschau Version ${o.previewVersion||1} freigegeben`);addNotification(`${id}: Kunde hat die Vorschau freigegeben.`,"previewApproved");
+  o.history=o.history||[];o.history.unshift({label:`Vorschau Version ${o.previewVersion||1} freigegeben`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`${id}: Kunde hat Vorschau Version ${o.previewVersion||1} freigegeben`);addNotification(`${id}: Kunde hat die Vorschau freigegeben.`,"previewApproved");
   save();render("customer");showToast("Vorschau wurde freigegeben.");
 };
 
@@ -482,14 +545,14 @@ window.saveOrderPreview=async function(id){
   o.changeRequest="";
   o.status="Kundenvorschau";
   o.progress=Math.max(o.progress||0,80);
-  state.logs.unshift(`${id}: Kundenvorschau Version ${o.previewVersion} hochgeladen`);
+  o.history=o.history||[];o.history.unshift({label:`Kundenvorschau Version ${o.previewVersion} hochgeladen`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`${id}: Kundenvorschau Version ${o.previewVersion} hochgeladen`);
   save();
   closeModal();
   render("orders");
   showToast("Kundenvorschau gespeichert.");
 };
 
-window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;if(o.paymentStatus==="Nicht berechnet")o.paymentStatus="Zahlung offen";state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
+window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;if(o.paymentStatus==="Nicht berechnet")o.paymentStatus="Zahlung offen";o.history=o.history||[];o.history.unshift({label:`Preisangebot ${eur(val)}`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
 
 window.savePaymentStatus=function(id){
   const o=state.orders.find(x=>x.id===id);
@@ -505,7 +568,7 @@ window.savePaymentStatus=function(id){
     if(c && o.finalPrice) c.revenue=Number(c.revenue||0)+Number(o.finalPrice);
   }
   if(newStatus!=="Bezahlt") o.paidAt="";
-  state.logs.unshift(`${id}: Zahlungsstatus auf "${newStatus}" gesetzt`);
+  o.history=o.history||[];o.history.unshift({label:`Zahlung: ${newStatus}`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`${id}: Zahlungsstatus auf "${newStatus}" gesetzt`);
   save();closeModal();render("orders");showToast("Zahlungsstatus gespeichert.");
 };
 
