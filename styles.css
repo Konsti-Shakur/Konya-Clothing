@@ -416,3 +416,9 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
 #ordersTable td small{color:var(--muted);font-size:10px}
 @media(max-width:1350px){.order-filter-bar{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.order-filter-bar{grid-template-columns:1fr}.mini-progress{width:70px}}
+
+.ticket-chat{display:grid;gap:9px;max-height:310px;overflow:auto;padding-right:3px}
+.ticket-message{border:1px solid var(--line);border-radius:10px;background:#0a1113;padding:10px 12px}
+.ticket-message b{font-size:11px;color:var(--accent)}
+.ticket-message p{font-size:12px;line-height:1.5;margin:6px 0;color:#d7e0e2}
+.ticket-message span{font-size:10px;color:var(--muted)}

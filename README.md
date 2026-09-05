@@ -1,11 +1,11 @@
-# Konya Clothing V3.7 – Auftragsfilter & Sortierung
+# Konya Clothing V3.8 – Ticketsystem
 
-Die nächsten 5 Schritte:
+Die nächsten 5 Schritte wurden eingebaut:
 
-1. Aufträge nach Status filtern.
-2. Nach Priorität filtern.
-3. Nach Designer filtern.
-4. Nach Zahlungsstatus filtern.
-5. Sortierung nach Deadline, Priorität oder Fortschritt plus kombinierte Suche.
+1. Ticket-Detailansicht mit Status, Priorität und Zuständigkeit.
+2. Tickets direkt mit einem Auftrag verknüpfen.
+3. Interne Notizen pro Ticket.
+4. Eigener Nachrichtenverlauf innerhalb des Tickets.
+5. Dashboard-Hinweis für Tickets, die auf eine Kundenantwort warten.
 
-Zusätzlich zeigt eine kleine Zusammenfassung sofort Trefferzahl, dringende Aufträge und offene Zahlungen.
+Wichtige Änderungen werden zusätzlich im Protokoll gespeichert.

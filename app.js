@@ -101,6 +101,12 @@ state.orders.forEach(o=>{
   if(o.priority===undefined) o.priority="Normal";
   if(o.progress===undefined) o.progress=0;
 });
+state.tickets.forEach(t=>{
+  if(t.orderId===undefined) t.orderId="";
+  if(t.internalNote===undefined) t.internalNote="";
+  if(!t.messages) t.messages=[];
+  if(!t.createdAt) t.createdAt="05.09.2026";
+});
 // V3.4.1 migration: repair the known demo hoodie order if an older localStorage version stored 5 €.
 const demoHoodie=state.orders.find(o=>o.id==="KC-2026-0042" && o.type==="Hoodie / Pullover");
 if(demoHoodie){
@@ -217,6 +223,7 @@ function dashboard(){
         <div class="attention-item"><div class="attention-icon">✓</div><div><strong>${state.clothing.filter(c=>c.status==="Kundenvorschau").length} Vorschau wartet</strong><small>Kundenfreigabe steht noch aus.</small></div></div>
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</strong><small>Bezahlstatus der Aufträge prüfen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">!</div><div><strong>${state.orders.filter(o=>o.priority==="Dringend").length} dringende Aufträge</strong><small>Aufträge mit hoher Priorität zuerst bearbeiten.</small></div></div>
+        <div class="attention-item"><div class="attention-icon">□</div><div><strong>${state.tickets.filter(t=>t.status==="Warten auf Kunde").length} Tickets warten auf Kunden</strong><small>Offene Rückfragen im Blick behalten.</small></div></div>
       </div></div>
     </div>`;
 }
@@ -225,7 +232,7 @@ function genericTable(view){
   const configs={
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
     customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
-    tickets:{t:"Tickets",s:"Support, Änderungswünsche und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[x.id,x.title,x.client,x.priority,`<span class="status ${statusClass(x.priority==="Dringend"?"Dringend":x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
+    tickets:{t:"Tickets",s:"Support, Änderungswünsche, Auftragsbezug und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Auftrag","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[`<b onclick="openTicketDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.title,x.client,x.orderId||"—",`<span class="status ${x.priority==="Dringend"?"danger":x.priority==="Hoch"?"wait":"new"}">${x.priority}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
     employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
   };
   if(view==="orders") return renderOrdersTable();
@@ -667,7 +674,83 @@ window.savePaymentStatus=function(id){
 
 window.openClothingModal=function(){modal(formTemplate("Neues Clothing-Design","Design direkt einem Kunden und einer Kategorie zuordnen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Kategorie</label><select name="category">${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div><div class="form-group"><label>Kunde</label><input name="customer" required></div><div class="form-group"><label>Status</label><select name="status"><option>Entwurf</option><option>In Bearbeitung</option><option>Kundenvorschau</option><option>Freigegeben</option></select></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.clothing.unshift({...f,versions:1});save();closeModal();render("clothing");showToast("Design gespeichert.")}}
 window.openCustomerModal=function(){modal(formTemplate("Neuen Kunden anlegen","Kundenakte für Bestellungen und Support.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Discord</label><input name="discord"></div><div class="form-group full"><label>Organisation / Fraktion / Unternehmen</label><input name="organization" placeholder="Privat"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.customers.unshift({name:f.name,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});save();closeModal();render("customers");showToast("Kunde angelegt.")}}
-window.openTicketModal=function(){modal(formTemplate("Neues Ticket","Support oder Änderungswunsch erfassen.",`<div class="form-group"><label>Betreff</label><input name="title" required></div><div class="form-group"><label>Kunde</label><input name="client" required></div><div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div><div class="form-group"><label>Zuständig</label><input name="assigned" value="Konsti Shakur"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.tickets.unshift({id:"#"+(129+state.tickets.length),title:f.title,client:f.client,priority:f.priority,status:"Offen",assigned:f.assigned});if(f.priority==="Dringend")addNotification(`Dringendes Ticket von ${f.client}: ${f.title}`,"urgentTicket");save();closeModal();render("tickets");showToast("Ticket angelegt.")}}
+window.openTicketModal=function(){
+  modal(formTemplate("Neues Ticket","Support, Änderungswunsch oder Rückfrage erfassen.",`
+    <div class="form-group"><label>Betreff</label><input name="title" required></div>
+    <div class="form-group"><label>Kunde</label><input name="client" required></div>
+    <div class="form-group"><label>Auftrag verknüpfen</label><select name="orderId"><option value="">Kein Auftrag</option>${state.orders.map(o=>`<option value="${o.id}">${o.id} · ${o.client}</option>`).join("")}</select></div>
+    <div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div>
+    <div class="form-group"><label>Zuständig</label><select name="assigned">${state.employees.map(e=>`<option>${e.name}</option>`).join("")}</select></div>
+    <div class="form-group"><label>Status</label><select name="status"><option>Offen</option><option>In Bearbeitung</option><option>Warten auf Kunde</option></select></div>
+    <div class="form-group full"><label>Erste Nachricht</label><textarea name="message" placeholder="Worum geht es?"></textarea></div>`));
+  document.getElementById("modalForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=Object.fromEntries(new FormData(e.target));
+    const id="#"+(129+state.tickets.length);
+    state.tickets.unshift({id,title:f.title,client:f.client,orderId:f.orderId||"",priority:f.priority,status:f.status,assigned:f.assigned,internalNote:"",createdAt:new Date().toLocaleDateString("de-DE"),messages:f.message?[{from:"Admin",text:f.message,date:new Date().toLocaleString("de-DE")}]:[]});
+    if(f.priority==="Dringend") addNotification(`Dringendes Ticket von ${f.client}: ${f.title}`,"urgentTicket");
+    state.logs.unshift(`${id}: Ticket für ${f.client} erstellt`);
+    save();closeModal();render("tickets");showToast("Ticket angelegt.");
+  };
+}
+
+window.openTicketDetail=function(id){
+  const t=state.tickets.find(x=>x.id===id); if(!t) return;
+  modal(`<h2>${t.id} · ${t.title}</h2><p>${t.client}${t.orderId?` · Auftrag ${t.orderId}`:""}</p>
+    <div class="order-detail-grid">
+      <div class="detail-card">
+        <h3 style="margin-top:0">Ticket verwalten</h3>
+        <label class="inline-note">Status</label>
+        <select class="field" id="ticketStatusInput" style="width:100%;margin:6px 0 10px">${["Offen","In Bearbeitung","Warten auf Kunde","Gelöst","Geschlossen"].map(s=>`<option ${s===t.status?"selected":""}>${s}</option>`).join("")}</select>
+        <label class="inline-note">Priorität</label>
+        <select class="field" id="ticketPriorityInput" style="width:100%;margin:6px 0 10px">${["Normal","Hoch","Dringend"].map(s=>`<option ${s===t.priority?"selected":""}>${s}</option>`).join("")}</select>
+        <label class="inline-note">Zuständig</label>
+        <select class="field" id="ticketAssignedInput" style="width:100%;margin:6px 0 10px">${state.employees.map(e=>`<option ${e.name===t.assigned?"selected":""}>${e.name}</option>`).join("")}</select>
+        <label class="inline-note">Auftrag</label>
+        <select class="field" id="ticketOrderInput" style="width:100%;margin:6px 0 10px"><option value="">Kein Auftrag</option>${state.orders.map(o=>`<option value="${o.id}" ${o.id===t.orderId?"selected":""}>${o.id} · ${o.client}</option>`).join("")}</select>
+        <label class="inline-note">Interne Notiz</label>
+        <textarea id="ticketNoteInput" placeholder="Nur intern sichtbar ...">${t.internalNote||""}</textarea>
+        <button class="primary-btn" style="margin-top:10px;width:100%" onclick="saveTicketDetail('${t.id}')">Ticket speichern</button>
+      </div>
+      <div class="detail-card">
+        <h3 style="margin-top:0">Nachrichten</h3>
+        <div class="ticket-chat">${(t.messages||[]).length?(t.messages||[]).map(m=>`<div class="ticket-message"><b>${m.from}</b><p>${m.text}</p><span>${m.date}</span></div>`).join(""):`<div class="empty">Noch keine Nachrichten.</div>`}</div>
+        <label class="inline-note" style="display:block;margin-top:12px">Neue Nachricht</label>
+        <textarea id="ticketMessageInput" placeholder="Antwort oder Information eintragen ..."></textarea>
+        <button class="secondary-btn" style="margin-top:9px;width:100%" onclick="addTicketMessage('${t.id}')">Nachricht hinzufügen</button>
+      </div>
+    </div>`);
+}
+
+window.saveTicketDetail=function(id){
+  const t=state.tickets.find(x=>x.id===id); if(!t) return;
+  const oldStatus=t.status, oldPriority=t.priority, oldAssigned=t.assigned, oldOrder=t.orderId;
+  t.status=document.getElementById("ticketStatusInput").value;
+  t.priority=document.getElementById("ticketPriorityInput").value;
+  t.assigned=document.getElementById("ticketAssignedInput").value;
+  t.orderId=document.getElementById("ticketOrderInput").value;
+  t.internalNote=document.getElementById("ticketNoteInput").value.trim();
+  if(t.priority==="Dringend" && oldPriority!=="Dringend") addNotification(`${id}: Ticket wurde auf Dringend gesetzt.`,"urgentTicket");
+  const changes=[];
+  if(oldStatus!==t.status) changes.push(`Status: ${t.status}`);
+  if(oldPriority!==t.priority) changes.push(`Priorität: ${t.priority}`);
+  if(oldAssigned!==t.assigned) changes.push(`Zuständig: ${t.assigned}`);
+  if(oldOrder!==t.orderId) changes.push(`Auftrag: ${t.orderId||"entfernt"}`);
+  state.logs.unshift(`${id}: ${changes.length?changes.join(" · "):"Ticket aktualisiert"}`);
+  save();closeModal();render("tickets");showToast("Ticket gespeichert.");
+}
+
+window.addTicketMessage=function(id){
+  const t=state.tickets.find(x=>x.id===id); if(!t) return;
+  const input=document.getElementById("ticketMessageInput");
+  const text=input.value.trim();
+  if(!text){showToast("Bitte eine Nachricht eingeben.");return;}
+  t.messages=t.messages||[];
+  t.messages.push({from:"Konsti Shakur",text,date:new Date().toLocaleString("de-DE")});
+  state.logs.unshift(`${id}: Neue Ticket-Nachricht`);
+  save();openTicketDetail(id);showToast("Nachricht gespeichert.");
+}
+
 window.openEmployeeModal=function(){modal(formTemplate("Mitarbeiter hinzufügen","Rolle und Rechte zuweisen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Rolle</label><select name="role"><option>Admin</option><option>Designer</option><option>Support</option><option>Buchhaltung</option></select></div><div class="form-group full"><label>Berechtigungen</label><input name="permissions" value="Clothing, Aufträge"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.employees.push({...f,active:true});save();closeModal();render("employees");showToast("Mitarbeiter hinzugefügt.")}}
 window.openCategoryModal=function(){modal(formTemplate("Kategorie hinzufügen","Neue Clothing-Kategorie anlegen.",`<div class="form-group full"><label>Name</label><input name="name" required></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.categories.push(f.name);save();closeModal();render("categories");showToast("Kategorie hinzugefügt.")}}
 window.deleteCategory=function(i){if(confirm("Kategorie wirklich löschen?")){state.categories.splice(i,1);save();render("categories")}}
