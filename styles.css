@@ -2517,3 +2517,402 @@ body{
     display:grid;
   }
 }
+
+/* =========================================================
+   V3.17 – CLEANUP & STABILITY
+   fixes screenshot layout and route/runtime issues
+   ========================================================= */
+
+/* Public mode must hide ALL admin chrome reliably */
+body.public-mode > .app-shell > .sidebar,
+body.public-mode > .app-shell > .main > .topbar,
+body.customer-mode > .app-shell > .sidebar,
+body.customer-mode > .app-shell > .main > .topbar{
+  display:none !important;
+}
+
+body.public-mode > .app-shell,
+body.customer-mode > .app-shell{
+  display:block !important;
+  width:100% !important;
+}
+
+body.public-mode > .app-shell > .main,
+body.customer-mode > .app-shell > .main{
+  margin:0 !important;
+  width:100% !important;
+  min-width:0 !important;
+  padding:0 !important;
+}
+
+body.public-mode #viewRoot,
+body.customer-mode #viewRoot{
+  width:100% !important;
+  min-height:100vh;
+}
+
+/* Correct homepage spacing */
+body.public-mode .site-main{
+  width:min(1460px,calc(100% - 64px));
+  margin:0 auto;
+  padding:32px 0 88px;
+}
+
+body.public-mode .site-header{
+  height:72px;
+  padding:0 max(32px,calc((100vw - 1460px)/2));
+}
+
+/* Hero from screenshot: less oversized, no collisions */
+body.public-mode .studio-hero{
+  min-height:620px;
+  grid-template-columns:minmax(0,1.08fr) minmax(430px,.82fr);
+  gap:64px;
+  padding:62px 0 64px;
+  align-items:center;
+}
+
+body.public-mode .studio-hero-copy{
+  min-width:0;
+  padding-right:10px;
+}
+
+body.public-mode .studio-hero-copy h1{
+  max-width:760px;
+  margin:18px 0 22px;
+  font-size:clamp(54px,6.1vw,88px);
+  line-height:.91;
+  letter-spacing:-.062em;
+}
+
+body.public-mode .studio-lead{
+  max-width:650px;
+  font-size:14px;
+  line-height:1.72;
+}
+
+body.public-mode .studio-hero-actions{
+  margin-top:28px;
+}
+
+body.public-mode .studio-metrics{
+  max-width:560px;
+  margin-top:38px;
+  padding-top:20px;
+}
+
+body.public-mode .studio-hero-visual{
+  padding:0;
+  min-width:0;
+}
+
+body.public-mode .studio-visual-frame{
+  min-height:500px;
+  height:500px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;
+}
+
+body.public-mode .studio-visual-frame img{
+  height:500px;
+  min-height:500px;
+  width:100%;
+  object-fit:cover;
+}
+
+body.public-mode .studio-visual-overlay{
+  left:22px;
+  bottom:20px;
+}
+
+body.public-mode .studio-float-card{
+  position:absolute;
+  min-width:118px;
+  padding:11px 13px;
+  border-radius:9px;
+  box-shadow:0 16px 34px rgba(0,0,0,.28);
+}
+
+body.public-mode .studio-float-top{
+  top:18px;
+  right:18px;
+}
+
+body.public-mode .studio-float-bottom{
+  left:18px;
+  bottom:18px;
+}
+
+/* No cards hanging outside the image */
+body.public-mode .studio-hero-visual{
+  position:relative;
+}
+
+/* Section separators and width */
+body.public-mode .studio-strip{
+  min-height:58px;
+  padding:0 12px;
+}
+
+body.public-mode .studio-section{
+  grid-template-columns:105px minmax(0,1fr);
+  gap:34px;
+  padding:72px 0;
+}
+
+body.public-mode .studio-section-content{
+  min-width:0;
+}
+
+body.public-mode .studio-section-head h2{
+  font-size:clamp(32px,4vw,54px);
+}
+
+/* Cleaner service rows */
+body.public-mode .studio-service-list article{
+  min-height:90px;
+  grid-template-columns:48px minmax(0,1fr) auto;
+}
+
+body.public-mode .studio-service-list p{
+  max-width:720px;
+}
+
+/* Process cards more even */
+body.public-mode .studio-process-list article{
+  min-height:154px;
+  padding:19px;
+}
+
+body.public-mode .studio-process-list h3{
+  margin-top:30px;
+}
+
+/* Showcase avoids awkward giant first tile */
+body.public-mode .studio-showcase-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+body.public-mode .studio-showcase-card.wide{
+  grid-column:span 1;
+}
+
+body.public-mode .studio-showcase-card.wide .studio-showcase-art,
+body.public-mode .studio-showcase-art{
+  min-height:300px;
+}
+
+/* Keep long content from overflowing */
+body.public-mode .studio-showcase-card,
+body.public-mode .studio-service-list article,
+body.public-mode .studio-process-list article,
+body.public-mode .studio-price-list > div{
+  min-width:0;
+}
+
+body.public-mode .studio-art-title strong,
+body.public-mode .studio-service-list h3,
+body.public-mode .studio-showcase-copy p{
+  overflow-wrap:anywhere;
+}
+
+/* Public header cleaner */
+body.public-mode .site-brand{
+  min-width:210px;
+}
+
+body.public-mode .site-nav{
+  gap:18px;
+}
+
+body.public-mode .site-header-actions{
+  flex-shrink:0;
+}
+
+/* Pricing / subpages */
+body.public-mode .page-hero{
+  padding-top:56px;
+  padding-bottom:34px;
+}
+
+body.public-mode .price-page-grid{
+  align-items:start;
+}
+
+body.public-mode .price-group-card{
+  min-width:0;
+}
+
+/* Forms */
+body.public-mode .order-page-card,
+body.public-mode .order-info-card,
+body.public-mode .side-info-card{
+  border-radius:12px;
+}
+
+body.public-mode .order-page-form input,
+body.public-mode .order-page-form select,
+body.public-mode .order-page-form textarea{
+  min-width:0;
+}
+
+/* Footer */
+body.public-mode .site-footer{
+  padding-left:max(32px,calc((100vw - 1460px)/2));
+  padding-right:max(32px,calc((100vw - 1460px)/2));
+}
+
+/* Admin cleanup */
+body.admin-mode .main{
+  min-width:0;
+}
+
+body.admin-mode .topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+body.admin-mode .content,
+body.admin-mode #viewRoot{
+  min-width:0;
+}
+
+body.admin-mode .table-wrap{
+  overflow:auto;
+}
+
+body.admin-mode table{
+  min-width:720px;
+}
+
+body.admin-mode .grid,
+body.admin-mode .kpi-grid,
+body.admin-mode .two-col{
+  min-width:0;
+}
+
+/* Tablet */
+@media(max-width:1180px){
+  body.public-mode .studio-hero{
+    grid-template-columns:1fr 1fr;
+    gap:34px;
+  }
+
+  body.public-mode .studio-hero-copy h1{
+    font-size:clamp(50px,6vw,72px);
+  }
+
+  body.public-mode .studio-showcase-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+/* Switch hero to one column earlier to prevent compression */
+@media(max-width:940px){
+  body.public-mode .site-main{
+    width:min(100% - 36px,1460px);
+  }
+
+  body.public-mode .studio-hero{
+    grid-template-columns:1fr;
+    gap:32px;
+    padding-top:42px;
+  }
+
+  body.public-mode .studio-hero-copy{
+    max-width:760px;
+  }
+
+  body.public-mode .studio-hero-visual{
+    max-width:780px;
+  }
+
+  body.public-mode .studio-section{
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+
+  body.public-mode .studio-section-label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  body.public-mode .studio-section-label p{
+    margin:0;
+  }
+}
+
+/* Mobile */
+@media(max-width:650px){
+  body.public-mode .site-main{
+    width:min(100% - 24px,1460px);
+    padding-top:18px;
+  }
+
+  body.public-mode .site-header{
+    height:66px;
+    padding:0 14px;
+  }
+
+  body.public-mode .studio-hero{
+    padding:28px 0 42px;
+  }
+
+  body.public-mode .studio-hero-copy h1{
+    font-size:46px;
+    line-height:.94;
+  }
+
+  body.public-mode .studio-lead{
+    font-size:12px;
+  }
+
+  body.public-mode .studio-hero-actions{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+
+  body.public-mode .studio-main-btn{
+    width:100%;
+  }
+
+  body.public-mode .studio-metrics{
+    gap:20px;
+  }
+
+  body.public-mode .studio-visual-frame,
+  body.public-mode .studio-visual-frame img{
+    min-height:330px;
+    height:330px;
+  }
+
+  body.public-mode .studio-float-card{
+    min-width:104px;
+    padding:9px 10px;
+  }
+
+  body.public-mode .studio-strip{
+    justify-content:flex-start;
+  }
+
+  body.public-mode .studio-showcase-grid{
+    grid-template-columns:1fr;
+  }
+
+  body.public-mode .studio-process-list{
+    grid-template-columns:1fr;
+  }
+
+  body.public-mode .studio-price-wrap{
+    grid-template-columns:1fr;
+  }
+
+  body.public-mode .studio-final{
+    padding-top:52px;
+  }
+}

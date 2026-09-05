@@ -1,22 +1,26 @@
-# Konya Clothing V3.16 – Studio Minimal
+# Konya Clothing V3.17 – Clean & Stable
 
-Komplett neuer Stil für die gesamte Website.
+Diese Version behebt die sichtbaren Layout-Probleme aus V3.16 und mehrere echte JavaScript-Fehler.
 
-## Die 5 großen Änderungen
+## Die 5 wichtigsten Fixes
 
-1. **Neues Studio-Layout**
-   Deutlich ruhiger, minimalistischer und hochwertiger als die bisherigen Dashboard-/Card-Designs.
+1. **Öffentliche Seite sauber getrennt**
+   Admin-Topbar und Sidebar werden auf der Hauptseite zuverlässig ausgeblendet.
 
-2. **Komplett neuer Startbereich**
-   Editorial Hero, großes Branding, Kennzahlen und visuelle Bannerfläche.
+2. **Hero komplett korrigiert**
+   Überschrift, Banner und Express/Workflow-Karten überlappen nicht mehr und passen sauber in das Layout.
 
-3. **Neue Inhaltsstruktur**
-   Leistungen, Ablauf, Showcase und Preise wurden in klare horizontale Bereiche mit Nummerierung aufgeteilt.
+3. **Runtime-Fehler behoben**
+   Fehlende Routing-Variablen, `priceLookup()` und Datei-Upload-Helfer wurden ergänzt.
 
-4. **Showcase und Preise komplett neu gestaltet**
-   Größere Designflächen, weniger Boxen, klare Typografie und schnell erfassbare Preise.
+4. **Datenfehler korrigiert**
+   Preisgruppen verwenden das richtige Datenfeld und öffentliche Aufträge speichern die Leistung kompatibel zum Adminbereich.
 
-5. **Adminbereich ebenfalls neu gestylt**
-   Flachere Navigation, kompaktere Karten, weniger Rundungen und deutlich reduziertere Optik.
+5. **Responsive + Overflow Fix**
+   Desktop, Tablet und Handy brechen sauber um; Tabellen, Showcase und Formulare laufen nicht mehr aus dem Layout.
 
-Alle bestehenden Funktionen, PostgreSQL, Kundenbereich und Routen bleiben erhalten.
+## Prüfung
+- `node --check app.js`
+- `node --check server.js`
+
+PostgreSQL, Kundenbereich, öffentliche Unterseiten und der vorhandene Adminbereich bleiben erhalten.

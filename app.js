@@ -232,6 +232,16 @@ function previewBlock(o){
   </div>`;
 }
 save(); // persist V3.4.1 migrations
+
+const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+const isAdminRoute = currentPath === "/admin" || currentPath.startsWith("/admin/");
+const isCustomerRoute = currentPath === "/kundenbereich" || currentPath.startsWith("/kundenbereich/");
+const isPublicRoute = !isAdminRoute && !isCustomerRoute;
+
+document.body.classList.toggle("admin-mode", isAdminRoute);
+document.body.classList.toggle("customer-mode", isCustomerRoute);
+document.body.classList.toggle("public-mode", isPublicRoute);
+
 const root = document.getElementById("viewRoot");
 const title = document.getElementById("pageTitle");
 const subtitle = document.getElementById("pageSubtitle");
@@ -243,6 +253,8 @@ function priceRange(item){
 }
 function allServices(){ return state.pricing.flatMap(g=>g.items.map(i=>({...i,group:g.group}))); }
 function findService(name){ return allServices().find(i=>i.name===name); }
+function priceLookup(name){ return findService(name) || {min:0,max:0}; }
+async function filesToDataUrls(fileList){ return filesToAttachments(fileList || []); }
 function statusClass(s){
   if(/fertig|freigegeben|ausgeliefert|aktiv/i.test(s)) return "done";
   if(/warten|vorschau/i.test(s)) return "wait";
@@ -405,7 +417,7 @@ function showcase(){
 }
 
 function publicView(){
-  document.title="Konya Clothing – Custom FiveM Clothing";
+  document.title="Konya Clothing · Custom FiveM Clothing";
   const featured=state.showcase.slice(0,6);
 
   root.innerHTML=`
@@ -480,6 +492,8 @@ window.publicNavigate=function(page){
   const routes={home:"/",showcase:"/showcase",prices:"/preise",order:"/auftrag"};
   const target=routes[page]||"/";
   history.pushState({publicPage:page},"",target);
+  document.body.classList.add("public-mode");
+  document.body.classList.remove("admin-mode","customer-mode");
   renderPublicPage(page,false);
   window.scrollTo({top:0,behavior:"smooth"});
 };
@@ -572,7 +586,7 @@ function renderPublicPage(page){
         ${state.pricing.map(group=>`
           <article class="price-group-card">
             <div class="price-group-head">
-              <span>${escapeHtml(group.title)}</span>
+              <span>${escapeHtml(group.group || "Leistungen")}</span>
               <small>${group.items.length} Leistungen</small>
             </div>
             <div class="price-group-body">
@@ -914,7 +928,7 @@ function bindInlinePublicOrderForm(){
     const discord=String(fd.get("discord")||"").trim();
     const organization=String(fd.get("organization")||"").trim()||"Privat";
     const order={
-      id,client,discord,organization,category:fd.get("category"),product,
+      id,client,discord,organization,category:fd.get("category"),type:product,product,
       description:String(fd.get("description")||"").trim(),
       designer:"Noch offen",status:"Anfrage",priority:"Normal",
       progress:5,deadline:fd.get("deadline")||"",created:new Date().toLocaleDateString("de-DE"),
