@@ -420,6 +420,273 @@ function publicView(){
   document.title="Konya Clothing · Custom FiveM Clothing";
   const featured=state.showcase.slice(0,6);
 
+  root.innerHTML=`
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="site-brand" href="/" onclick="event.preventDefault();publicNavigate('home')">
+          <img src="/assets/konya-logo.png" alt="Konya Clothing">
+          <div>
+            <strong>Konya Clothing</strong>
+            <span>Custom FiveM Clothing</span>
+          </div>
+        </a>
+
+        <nav class="site-nav">
+          <a href="/" data-public-nav="home" class="active" onclick="event.preventDefault();publicNavigate('home')">Start</a>
+          <a href="/showcase" data-public-nav="showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
+          <a href="/preise" data-public-nav="prices" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
+          <a href="/auftrag" data-public-nav="order" onclick="event.preventDefault();publicNavigate('order')">Auftrag</a>
+          <a href="/kundenbereich" onclick="">Kundenbereich</a>
+        </nav>
+
+        <div class="site-header-actions">
+          <a class="secondary-btn site-login" href="/admin">Admin</a>
+          <a class="primary-btn" href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+        </div>
+
+        <button class="mobile-menu-btn" onclick="togglePublicMenu()" aria-label="Menü">☰</button>
+      </header>
+
+      <div class="mobile-site-nav hidden" id="mobileSiteNav">
+        <a href="/" onclick="event.preventDefault();publicNavigate('home');togglePublicMenu()">Start</a>
+        <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase');togglePublicMenu()">Showcase</a>
+        <a href="/preise" onclick="event.preventDefault();publicNavigate('prices');togglePublicMenu()">Preise</a>
+        <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order');togglePublicMenu()">Auftrag</a>
+        <a href="/kundenbereich">Kundenbereich</a>
+        <a href="/admin">Admin</a>
+      </div>
+
+      <main class="site-main" id="publicPage"></main>
+
+      <footer class="site-footer">
+        <div class="site-footer-brand">
+          <img src="/assets/konya-logo.png" alt="Konya Clothing">
+          <div>
+            <strong>Konya Clothing</strong>
+            <p>Individuelle FiveM-Kleidung, Texture Reworks und Custom Designs.</p>
+          </div>
+        </div>
+        <div class="site-footer-links">
+          <a href="/" onclick="event.preventDefault();publicNavigate('home')">Startseite</a>
+          <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
+          <a href="/preise" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
+          <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+          <a href="/kundenbereich">Kundenbereich</a>
+        </div>
+        <div class="site-footer-bottom">
+          <span>© 2026 Konya Clothing</span>
+          <span>Alle Preise sind Richtwerte und werden nach Aufwand abgestimmt.</span>
+        </div>
+      </footer>
+    </div>
+  `;
+
+  const path=window.location.pathname;
+  if(path==="/showcase") renderPublicPage("showcase",false);
+  else if(path==="/preise") renderPublicPage("prices",false);
+  else if(path==="/auftrag") renderPublicPage("order",false);
+  else renderPublicPage("home",false);
+}
+
+window.publicNavigate=function(page){
+  const routes={home:"/",showcase:"/showcase",prices:"/preise",order:"/auftrag"};
+  const target=routes[page]||"/";
+  history.pushState({publicPage:page},"",target);
+  document.body.classList.remove("admin-mode","customer-mode");
+  document.body.classList.add("public-mode");
+  renderPublicPage(page);
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+window.onpopstate=function(){
+  if(window.location.pathname==="/admin" || window.location.pathname.startsWith("/admin/")) return;
+  if(window.location.pathname==="/kundenbereich" || window.location.pathname.startsWith("/kundenbereich/")) return;
+  const p=window.location.pathname;
+  renderPublicPage(p==="/showcase"?"showcase":p==="/preise"?"prices":p==="/auftrag"?"order":"home",false);
+};
+
+window.togglePublicMenu=function(){
+  const el=document.getElementById("mobileSiteNav");
+  if(el) el.classList.toggle("hidden");
+};
+
+function setPublicActive(page){
+  document.querySelectorAll("[data-public-nav]").forEach(a=>a.classList.toggle("active",a.dataset.publicNav===page));
+}
+
+function renderPublicPage(page){
+  const container=document.getElementById("publicPage");
+  if(!container) return;
+  setPublicActive(page);
+
+  const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+
+  if(page==="showcase"){
+    const categories=[...new Set(state.showcase.map(x=>x.category).filter(Boolean))];
+    container.innerHTML=`
+      <section class="page-hero compact showcase-hero">
+        <div>
+          <span class="eyebrow">SHOWCASE</span>
+          <h1>Designs mit eigenem Charakter.</h1>
+          <p>Von cleanen Streetwear-Looks bis zu auffälligen Custom-Outfits. Hier bekommst du einen schnellen Überblick über Stilrichtungen und Möglichkeiten.</p>
+        </div>
+        <div class="page-hero-side">
+          <strong>${state.showcase.length}</strong>
+          <span>aktuelle Showcase-Einträge</span>
+        </div>
+      </section>
+
+      <section class="site-section">
+        <div class="showcase-filterbar">
+          <button class="filter-chip active" onclick="filterShowcasePublic('all',this)">Alle</button>
+          ${categories.map(c=>`<button class="filter-chip" onclick="filterShowcasePublic('${escapeHtml(c).replace(/'/g,"\\'")}',this)">${escapeHtml(c)}</button>`).join("")}
+        </div>
+
+        <div class="public-showcase-grid full" id="publicShowcaseGrid">
+          ${state.showcase.map((x,i)=>`
+            <article class="public-showcase-card" data-category="${escapeHtml(x.category||"Custom")}">
+              <div class="public-showcase-visual ${i%2===0?"alt":""}">
+                <div class="showcase-badge">${escapeHtml(x.category||"Custom")}</div>
+                <div class="showcase-number">${String(i+1).padStart(2,"0")}</div>
+                <span>${escapeHtml(x.name||x.title||"Konya Clothing")}</span>
+              </div>
+              <div class="public-showcase-body">
+                <h3>${escapeHtml(x.name||x.title||"Design")}</h3>
+                <p>${escapeHtml(x.description||"Individuelles Clothing Design von Konya Clothing.")}</p>
+                <button class="text-link-btn" onclick="publicNavigate('order')">Ähnliches anfragen →</button>
+              </div>
+            </article>`).join("")}
+        </div>
+      </section>
+
+      <section class="public-order-cta site-cta">
+        <div><span class="eyebrow">DEIN DESIGN</span><h2>Du hast schon eine Idee im Kopf?</h2><p>Schick uns Referenzen, Farben und dein Logo. Wir machen daraus einen klar planbaren Auftrag.</p></div>
+        <button class="primary-btn" onclick="publicNavigate('order')">Projekt anfragen</button>
+      </section>`;
+    return;
+  }
+
+  if(page==="prices"){
+    const popular=["Hoodie / Pullover","Individuelles Custom-Outfit","Fraktions-Outfit"];
+    container.innerHTML=`
+      <section class="page-hero compact price-hero">
+        <div>
+          <span class="eyebrow">PREISE</span>
+          <h1>Klare Richtpreise. Keine Überraschungen.</h1>
+          <p>Du siehst sofort, in welchem Rahmen sich dein Projekt bewegt. Der finale Preis wird vor der Bearbeitung mit dir abgestimmt.</p>
+        </div>
+        <div class="price-hero-card">
+          <span>Express möglich</span>
+          <strong>48h</strong>
+          <small>+35–40 € je nach Aufwand</small>
+        </div>
+      </section>
+
+      <section class="site-section price-page-grid">
+        ${state.pricing.map(group=>`
+          <article class="price-group-card">
+            <div class="price-group-head">
+              <span>${escapeHtml(group.group || "Leistungen")}</span>
+              <small>${group.items.length} Leistungen</small>
+            </div>
+            <div class="price-group-body">
+              ${group.items.map(item=>`
+                <div class="price-line ${popular.includes(item.name)?"popular":""}">
+                  <div>
+                    <span>${escapeHtml(item.name)}</span>
+                    ${popular.includes(item.name)?'<small>Beliebt</small>':""}
+                  </div>
+                  <strong>${item.min===item.max?`${item.min} €`:`${item.min}–${item.max} €`}</strong>
+                </div>`).join("")}
+            </div>
+          </article>`).join("")}
+      </section>
+
+      <section class="price-explainer-grid">
+        <article><span>01</span><h3>Richtpreis</h3><p>Du siehst direkt den ungefähren Preisrahmen.</p></article>
+        <article><span>02</span><h3>Aufwand prüfen</h3><p>Wir bewerten Details, Referenzen und gewünschte Änderungen.</p></article>
+        <article><span>03</span><h3>Fixpreis</h3><p>Vor Beginn bekommst du deinen finalen Preis bestätigt.</p></article>
+      </section>
+
+      <div class="public-price-note site-price-note">Alle Preise dienen als Richtwerte. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
+
+      <section class="public-order-cta site-cta">
+        <div><span class="eyebrow">PREISANFRAGE</span><h2>Du möchtest einen genauen Preis?</h2><p>Beschreibe dein Projekt und wir geben dir eine konkrete Einschätzung.</p></div>
+        <button class="primary-btn" onclick="publicNavigate('order')">Preis anfragen</button>
+      </section>`;
+    return;
+  }
+
+  if(page==="order"){
+    container.innerHTML=`
+      <section class="page-hero compact order-hero">
+        <div>
+          <span class="eyebrow">AUFTRAG</span>
+          <h1>Von deiner Idee zum fertigen Clothing.</h1>
+          <p>Fülle die Anfrage so genau wie möglich aus. Damit können wir Aufwand, Preis und Umsetzung schneller einschätzen.</p>
+        </div>
+        <div class="order-hero-note">
+          <span>Was hilft uns?</span>
+          <strong>Referenzen · Farben · Logo · Stil · Termin</strong>
+        </div>
+      </section>
+
+      <section class="site-section order-page-layout">
+        <article class="order-page-card premium-form-card">
+          <div class="panel-head">
+            <div><h3>Auftragsanfrage</h3><span>Unverbindlich und ohne Zahlungspflicht</span></div>
+            <div class="step-pill">1 Anfrage</div>
+          </div>
+          <form id="publicInlineOrderForm" class="order-page-form">
+            <div class="form-section-title"><span>01</span><div><strong>Kontakt</strong><small>Wie können wir dich erreichen?</small></div></div>
+            <div class="form-grid two">
+              <div class="form-group"><label>Name *</label><input name="client" required placeholder="Dein Name"></div>
+              <div class="form-group"><label>Discord *</label><input name="discord" required placeholder="Name oder Discord-ID"></div>
+            </div>
+
+            <div class="form-section-title"><span>02</span><div><strong>Projekt</strong><small>Was möchtest du erstellen lassen?</small></div></div>
+            <div class="form-grid two">
+              <div class="form-group"><label>Organisation / Unternehmen</label><input name="organization" placeholder="Optional"></div>
+              <div class="form-group"><label>Kategorie *</label><select name="category" required>${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div>
+            </div>
+            <div class="form-grid two">
+              <div class="form-group"><label>Produkt / Leistung *</label>
+                <select name="product" required>
+                  ${state.pricing.flatMap(g=>g.items.map(i=>`<option value="${i.name}">${i.name} · ${i.min===i.max?i.min+" €":i.min+"–"+i.max+" €"}</option>`)).join("")}
+                </select>
+              </div>
+              <div class="form-group"><label>Wunschtermin</label><input name="deadline" type="date"></div>
+            </div>
+
+            <div class="form-section-title"><span>03</span><div><strong>Details</strong><small>Je genauer, desto besser.</small></div></div>
+            <div class="form-group"><label>Beschreibung *</label><textarea name="description" required rows="7" placeholder="Farben, Stil, Logos, gewünschte Änderungen, Vorlagen, besondere Wünsche ..."></textarea></div>
+            <div class="form-group upload-drop"><label>Dateien / Referenzen</label><input name="files" type="file" accept="image/*,.zip,.rar,.pdf" multiple><small>Bilder, Logos, ZIP/RAR oder PDF · max. 6 Dateien à 2 MB</small></div>
+            <button class="primary-btn large" type="submit">Auftrag unverbindlich anfragen</button>
+          </form>
+        </article>
+
+        <aside class="order-info-stack">
+          <article class="order-info-card">
+            <span class="eyebrow">ABLAUF</span>
+            <h3>Nach deiner Anfrage</h3>
+            <div class="mini-step"><b>01</b><span>Wir prüfen deine Angaben und den Aufwand.</span></div>
+            <div class="mini-step"><b>02</b><span>Du erhältst Preis und Auftragsdetails.</span></div>
+            <div class="mini-step"><b>03</b><span>Nach Annahme startet die Bearbeitung.</span></div>
+            <div class="mini-step"><b>04</b><span>Du erhältst eine Vorschau zur Freigabe.</span></div>
+            <div class="mini-step"><b>05</b><span>Nach Freigabe folgt die Auslieferung.</span></div>
+          </article>
+          <article class="side-info-card">
+            <span>Wichtig</span>
+            <p>Der Auftrag startet erst, nachdem Preis und Umfang abgestimmt wurden.</p>
+          </article>
+        </aside>
+      </section>`;
+    bindInlinePublicOrderForm();
+    return;
+  }
+
+  const featured=state.showcase.slice(0,6);
+
   container.innerHTML=`
     <section class="cinema-hero">
       <div class="cinema-bg"></div>
@@ -448,30 +715,20 @@ function publicView(){
         </div>
       </div>
 
-      <div class="cinema-right-mark">
-        <span>FIVEM</span>
-        <span>CUSTOM</span>
-        <span>DESIGN</span>
+      <div class="cinema-right-mark" aria-hidden="true">
+        <span>FIVEM</span><span>CUSTOM</span><span>DESIGN</span>
       </div>
 
-      <div class="cinema-social">
-        <span>◉</span>
-        <span>◎</span>
-        <span>𝕏</span>
-      </div>
-
-      <div class="cinema-quality">
-        <span>QUALITY</span>
-        <span>DETAILS</span>
-        <span>IDENTITY</span>
+      <div class="cinema-quality" aria-hidden="true">
+        <span>QUALITY</span><span>DETAILS</span><span>IDENTITY</span>
       </div>
     </section>
 
-    <section class="cinema-stats">
+    <section class="cinema-stats" aria-label="Konya Clothing Kennzahlen">
       <div><span class="stat-icon">▣</span><strong>${state.showcase.length}+</strong><small>DESIGNS</small></div>
       <div><span class="stat-icon">◉</span><strong>${state.customers.length}</strong><small>KUNDEN</small></div>
       <div><span class="stat-icon">▤</span><strong>${state.orders.length}</strong><small>AUFTRÄGE</small></div>
-      <div><span class="stat-icon">◷</span><strong>48h</strong><small>Ø BEARBEITUNG</small></div>
+      <div><span class="stat-icon">◷</span><strong>48h</strong><small>EXPRESS MÖGLICH</small></div>
       <div class="cinema-partner"><span>Dein Partner für</span><strong>Custom FiveM Clothing.</strong><i></i></div>
     </section>
 
@@ -488,39 +745,16 @@ function publicView(){
       </div>
 
       <div class="cinema-service-grid">
-        <article>
-          <span>01</span>
-          <h3>Custom Clothing</h3>
-          <p>Einzelteile oder komplette Sets – individuell nach deinem Stil.</p>
-          <button onclick="publicNavigate('order')">Anfragen →</button>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>Texture Rework</h3>
-          <p>Bestehende Texturen werden sauber überarbeitet und optimiert.</p>
-          <button onclick="publicNavigate('order')">Anfragen →</button>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>Logo Integration</h3>
-          <p>Logos und Schriftzüge passend auf Kleidung umgesetzt.</p>
-          <button onclick="publicNavigate('order')">Anfragen →</button>
-        </article>
-        <article>
-          <span>04</span>
-          <h3>Komplette Outfits</h3>
-          <p>Zusammenhängende Looks für Teams, Firmen oder Gruppen.</p>
-          <button onclick="publicNavigate('order')">Anfragen →</button>
-        </article>
+        <article><span>01</span><h3>Custom Clothing</h3><p>Einzelteile oder komplette Sets – individuell nach deinem Stil.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+        <article><span>02</span><h3>Texture Rework</h3><p>Bestehende Texturen werden sauber überarbeitet und optimiert.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+        <article><span>03</span><h3>Logo Integration</h3><p>Logos und Schriftzüge passend auf Kleidung umgesetzt.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
+        <article><span>04</span><h3>Komplette Outfits</h3><p>Zusammenhängende Looks für Teams, Firmen oder Gruppen.</p><button onclick="publicNavigate('order')">Anfragen →</button></article>
       </div>
     </section>
 
     <section class="cinema-showcase-preview">
       <div class="cinema-showcase-head">
-        <div>
-          <span class="cinema-kicker">SHOWCASE</span>
-          <h2>Ausgewählte Arbeiten.</h2>
-        </div>
+        <div><span class="cinema-kicker">SHOWCASE</span><h2>Ausgewählte Arbeiten.</h2></div>
         <button class="cinema-outline-btn" onclick="publicNavigate('showcase')">Alle Designs <span>→</span></button>
       </div>
 
@@ -759,7 +993,12 @@ function render(view){
   else if(view==="public") publicView();
   else if(view==="customer") customerArea();
 }
-document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>render(b.dataset.view)));
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{
+  const view=b.dataset.view;
+  if(view==="public"){ window.location.href="/"; return; }
+  if(view==="customer"){ window.location.href="/kundenbereich"; return; }
+  render(view);
+}));
 
 const backdrop=document.getElementById("modalBackdrop"), modalContent=document.getElementById("modalContent");
 function modal(html){modalContent.innerHTML=html;backdrop.classList.remove("hidden")}
@@ -1219,10 +1458,10 @@ async function loadBackendState(){
       if(isAdminRoute) showToast("Datenbank wurde mit deinem aktuellen Stand eingerichtet.");
     }
   }catch(err){
-    console.error("Backend load failed:",err);
+    console.warn("Backend nicht erreichbar – Browser-Backup aktiv.",err?.message||err);
     backendReady=false;
     setBackendStatus("offline","Datenbank offline · Browser-Backup aktiv");
-    showToast("Backend nicht erreichbar – Browser-Backup wird verwendet.");
+    if(isAdminRoute) showToast("Backend nicht erreichbar – Browser-Backup wird verwendet.");
   }
 }
 

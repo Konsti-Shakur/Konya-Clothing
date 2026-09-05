@@ -3275,86 +3275,123 @@ body.public-mode img{
 }
 
 /* =========================================================
-   V3.19 – CINEMATIC KONYA HOMEPAGE
-   Inspired by the approved homepage mockup
+   V3.20 – ALL FIXES / STABLE CINEMATIC HOMEPAGE
    ========================================================= */
 
+/* Public/customer mode can NEVER show admin chrome */
+body.public-mode .sidebar,
+body.public-mode .topbar,
+body.customer-mode .sidebar,
+body.customer-mode .topbar{
+  display:none !important;
+}
+
+body.public-mode .app-shell,
+body.customer-mode .app-shell{
+  display:block !important;
+  width:100% !important;
+}
+
+body.public-mode .main,
+body.customer-mode .main{
+  width:100% !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+body.public-mode #viewRoot,
+body.customer-mode #viewRoot{
+  width:100% !important;
+  min-width:0 !important;
+}
+
+/* Cinematic homepage */
 body.public-mode .site-main{
   width:100%;
   max-width:none;
-  padding:0 0 88px;
+  padding:0 0 90px;
 }
 
 body.public-mode .site-header{
-  height:78px;
-  padding:0 max(44px,calc((100vw - 1600px)/2));
-  background:rgba(4,7,8,.92);
-  border-bottom:1px solid rgba(255,255,255,.055);
-  box-shadow:0 8px 30px rgba(0,0,0,.18);
+  height:76px;
+  padding:0 max(34px,calc((100vw - 1540px)/2));
+  background:rgba(4,7,8,.94);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  box-shadow:0 10px 36px rgba(0,0,0,.18);
+}
+
+body.public-mode .site-brand{
+  min-width:220px;
 }
 
 body.public-mode .site-brand img{
-  width:42px;height:42px;
+  width:42px;
+  height:42px;
 }
 
 body.public-mode .site-nav{
-  gap:26px;
+  gap:24px;
 }
 
 body.public-mode .site-nav a{
   font-size:10px;
 }
 
-body.public-mode .site-header-actions .primary-btn{
+body.public-mode .site-header-actions{
+  flex-shrink:0;
+}
+
+body.public-mode .site-header-actions .primary-btn,
+body.public-mode .site-header-actions .secondary-btn{
   min-height:42px;
-  padding:0 18px;
-  box-shadow:0 0 28px rgba(32,212,207,.18);
+  padding:0 17px;
 }
 
 .cinema-hero{
   position:relative;
-  min-height:610px;
+  min-height:620px;
   overflow:hidden;
   display:flex;
   align-items:center;
-  padding:66px max(56px,calc((100vw - 1600px)/2));
-  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:68px max(52px,calc((100vw - 1540px)/2));
+  border-bottom:1px solid rgba(255,255,255,.055);
 }
 
 .cinema-bg{
   position:absolute;
   inset:0;
-  background:url("/assets/konya-banner.png") 73% center/cover no-repeat;
-  filter:saturate(.92) contrast(1.06) brightness(.8);
-  transform:scale(1.01);
+  background:url("/assets/konya-banner.png") 72% center/cover no-repeat;
+  filter:saturate(.92) contrast(1.05) brightness(.82);
+  transform:scale(1.008);
 }
 
 .cinema-shade{
   position:absolute;
   inset:0;
   background:
-    linear-gradient(90deg,#05090a 0%,rgba(5,9,10,.98) 25%,rgba(5,9,10,.84) 43%,rgba(5,9,10,.34) 64%,rgba(5,9,10,.14) 100%),
-    linear-gradient(180deg,rgba(3,6,7,.10),rgba(3,6,7,.34));
+    linear-gradient(90deg,#05090a 0%,rgba(5,9,10,.985) 28%,rgba(5,9,10,.90) 43%,rgba(5,9,10,.38) 66%,rgba(5,9,10,.14) 100%),
+    linear-gradient(180deg,rgba(4,7,8,.08),rgba(4,7,8,.28));
 }
 
 .cinema-left{
   position:relative;
   z-index:3;
-  max-width:760px;
+  width:min(760px,58vw);
 }
 
 .cinema-kicker{
-  color:#32d9d4;
+  color:#30d9d4;
   font-size:8px;
   font-weight:800;
-  letter-spacing:.18em;
+  letter-spacing:.17em;
   text-transform:uppercase;
 }
 
 .cinema-left h1{
-  margin:20px 0 20px;
-  font-size:clamp(58px,6.2vw,94px);
-  line-height:.88;
+  margin:19px 0 20px;
+  font-size:clamp(58px,6.1vw,92px);
+  line-height:.89;
   letter-spacing:-.062em;
   color:#fff;
 }
@@ -3365,38 +3402,35 @@ body.public-mode .site-header-actions .primary-btn{
 
 .cinema-left>p{
   max-width:660px;
-  color:#c1ccce;
-  font-size:15px;
-  line-height:1.7;
+  margin:0;
+  color:#bdc8ca;
+  font-size:14px;
+  line-height:1.72;
 }
 
 .cinema-actions{
   display:flex;
-  gap:14px;
+  gap:13px;
   margin-top:28px;
 }
 
 .cinema-btn{
-  min-height:50px;
-  padding:0 23px;
+  min-height:49px;
+  padding:0 22px;
   border-radius:8px;
-  font-size:11px;
-}
-
-.cinema-btn span{
-  margin-left:8px;
+  font-size:10px;
 }
 
 .cinema-outline-btn{
-  min-height:50px;
+  min-height:49px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   padding:0 20px;
   border:1px solid rgba(255,255,255,.16);
   border-radius:8px;
-  background:rgba(5,9,10,.46);
-  color:#e9f1f2;
+  background:rgba(5,9,10,.48);
+  color:#ecf3f4;
   font-size:10px;
   font-weight:800;
   text-decoration:none;
@@ -3405,13 +3439,13 @@ body.public-mode .site-header-actions .primary-btn{
 }
 
 .cinema-outline-btn:hover{
-  border-color:rgba(32,212,207,.34);
+  border-color:rgba(40,211,207,.38);
   color:#fff;
 }
 
 .cinema-benefits{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:16px;
   margin-top:38px;
   max-width:760px;
@@ -3419,152 +3453,143 @@ body.public-mode .site-header-actions .primary-btn{
 
 .cinema-benefits>div{
   display:grid;
-  grid-template-columns:28px 1fr;
+  grid-template-columns:26px minmax(0,1fr);
   gap:8px;
   align-items:center;
 }
 
 .cinema-benefits b{
   color:#2bdad5;
-  font-size:21px;
+  font-size:20px;
   font-weight:400;
 }
 
 .cinema-benefits span{
   display:grid;
+  min-width:0;
 }
 
 .cinema-benefits strong{
-  font-size:9px;
+  font-size:8px;
 }
 
 .cinema-benefits small{
   margin-top:3px;
   color:#7f9093;
-  font-size:8px;
+  font-size:7px;
 }
 
 .cinema-right-mark{
   position:absolute;
-  right:7%;
+  right:max(32px,4%);
   top:54px;
   z-index:3;
   display:grid;
   gap:8px;
-  color:rgba(255,255,255,.76);
-  font-size:8px;
-  letter-spacing:.42em;
+  color:rgba(255,255,255,.70);
+  font-size:7px;
+  letter-spacing:.40em;
   text-align:right;
-}
-
-.cinema-social{
-  position:absolute;
-  z-index:3;
-  right:3.2%;
-  bottom:100px;
-  display:grid;
-  gap:14px;
-  color:#29d8d3;
-  font-size:12px;
 }
 
 .cinema-quality{
   position:absolute;
-  z-index:3;
   left:18px;
-  bottom:36px;
+  bottom:34px;
+  z-index:3;
   display:grid;
-  gap:7px;
-  color:#8ea0a3;
-  font-size:8px;
-  letter-spacing:.28em;
+  gap:6px;
+  color:#7f9093;
+  font-size:7px;
+  letter-spacing:.25em;
 }
 
 .cinema-stats{
-  width:min(1380px,calc(100% - 80px));
-  margin:-42px auto 0;
   position:relative;
   z-index:5;
+  width:min(1380px,calc(100% - 70px));
+  min-height:94px;
+  margin:-38px auto 0;
   display:grid;
-  grid-template-columns:repeat(4,1fr) 1.3fr;
-  min-height:92px;
+  grid-template-columns:repeat(4,1fr) 1.35fr;
   border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-  background:rgba(7,12,13,.93);
-  box-shadow:0 20px 50px rgba(0,0,0,.22);
+  border-radius:11px;
+  background:rgba(7,12,13,.95);
+  box-shadow:0 20px 55px rgba(0,0,0,.24);
   backdrop-filter:blur(18px);
 }
 
 .cinema-stats>div{
   display:grid;
-  grid-template-columns:34px auto;
+  grid-template-columns:32px auto;
   align-content:center;
-  column-gap:12px;
-  padding:18px 22px;
+  column-gap:11px;
+  padding:17px 21px;
+  min-width:0;
 }
 
 .cinema-stats .stat-icon{
   grid-row:1/3;
   color:#2bdad5;
-  font-size:24px;
+  font-size:22px;
 }
 
 .cinema-stats strong{
-  font-size:21px;
+  font-size:20px;
 }
 
 .cinema-stats small{
   color:#718184;
-  font-size:8px;
-  letter-spacing:.14em;
+  font-size:7px;
+  letter-spacing:.13em;
 }
 
 .cinema-partner{
-  border-left:1px solid rgba(255,255,255,.06);
   grid-template-columns:1fr !important;
-  align-content:center !important;
+  border-left:1px solid rgba(255,255,255,.06);
 }
 
 .cinema-partner span{
-  color:#98a6a8;
-  font-size:10px;
+  color:#94a4a6;
+  font-size:9px;
 }
 
 .cinema-partner strong{
   margin-top:3px;
-  font-size:12px;
+  font-size:11px;
 }
 
 .cinema-partner i{
-  width:42px;height:2px;
-  margin-top:10px;
+  width:40px;
+  height:2px;
+  margin-top:9px;
   background:#2bdad5;
 }
 
 .cinema-services,
 .cinema-showcase-preview,
 .cinema-final{
-  width:min(1440px,calc(100% - 80px));
+  width:min(1440px,calc(100% - 70px));
   margin:0 auto;
 }
 
 .cinema-services{
-  padding:86px 0 50px;
+  padding:84px 0 48px;
 }
 
 .cinema-services-head{
   display:grid;
   grid-template-columns:1fr .8fr;
-  gap:64px;
+  gap:60px;
   align-items:end;
 }
 
 .cinema-services-head h2,
 .cinema-showcase-head h2,
 .cinema-final h2{
-  margin:10px 0 0;
-  font-size:clamp(38px,4.8vw,66px);
-  line-height:.95;
+  margin:9px 0 0;
+  font-size:clamp(38px,4.6vw,64px);
+  line-height:.96;
   letter-spacing:-.052em;
 }
 
@@ -3575,12 +3600,13 @@ body.public-mode .site-header-actions .primary-btn{
 .cinema-services-copy{
   display:grid;
   justify-items:end;
-  gap:16px;
+  gap:15px;
 }
 
 .cinema-services-copy p{
   max-width:520px;
-  color:#8e9c9f;
+  margin:0;
+  color:#89999b;
   font-size:10px;
   line-height:1.65;
   text-align:right;
@@ -3588,14 +3614,14 @@ body.public-mode .site-header-actions .primary-btn{
 
 .cinema-service-grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:12px;
-  margin-top:34px;
+  margin-top:32px;
 }
 
 .cinema-service-grid article{
-  min-height:220px;
-  padding:22px;
+  min-height:215px;
+  padding:21px;
   border:1px solid rgba(255,255,255,.07);
   border-radius:11px;
   background:linear-gradient(180deg,#0a1011,#071011);
@@ -3608,11 +3634,12 @@ body.public-mode .site-header-actions .primary-btn{
 }
 
 .cinema-service-grid h3{
-  margin:46px 0 8px;
-  font-size:16px;
+  margin:44px 0 8px;
+  font-size:15px;
 }
 
 .cinema-service-grid p{
+  margin:0;
   color:#7f8c8e;
   font-size:9px;
   line-height:1.55;
@@ -3630,7 +3657,7 @@ body.public-mode .site-header-actions .primary-btn{
 }
 
 .cinema-showcase-preview{
-  padding:40px 0 70px;
+  padding:42px 0 68px;
 }
 
 .cinema-showcase-head{
@@ -3638,24 +3665,25 @@ body.public-mode .site-header-actions .primary-btn{
   align-items:end;
   justify-content:space-between;
   gap:30px;
-  margin-bottom:26px;
+  margin-bottom:25px;
 }
 
 .cinema-showcase-grid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:14px;
 }
 
 .cinema-showcase-grid article{
+  min-width:0;
+  overflow:hidden;
   border:1px solid rgba(255,255,255,.07);
   border-radius:11px;
-  overflow:hidden;
   background:#080d0e;
 }
 
 .cinema-showcase-art{
-  min-height:280px;
+  min-height:270px;
   display:flex;
   flex-direction:column;
   justify-content:flex-end;
@@ -3673,17 +3701,18 @@ body.public-mode .site-header-actions .primary-btn{
   border:1px solid rgba(255,255,255,.10);
   color:#97a5a7;
   font-size:7px;
-  letter-spacing:.12em;
+  letter-spacing:.11em;
   text-transform:uppercase;
 }
 
 .cinema-showcase-art strong{
-  font-size:22px;
   max-width:330px;
+  font-size:21px;
+  overflow-wrap:anywhere;
 }
 
 .cinema-showcase-grid p{
-  min-height:52px;
+  min-height:50px;
   margin:0;
   padding:13px 15px;
   color:#7e8b8d;
@@ -3717,18 +3746,15 @@ body.public-mode .site-header-actions .primary-btn{
   flex-wrap:wrap;
 }
 
-@media(max-width:1100px){
-  .cinema-hero{
-    padding-left:36px;
-    padding-right:36px;
-  }
-
+/* Tablet */
+@media(max-width:1120px){
   .cinema-left{
-    max-width:680px;
+    width:min(700px,68vw);
   }
 
   .cinema-benefits{
     grid-template-columns:repeat(2,1fr);
+    max-width:560px;
   }
 
   .cinema-stats{
@@ -3743,6 +3769,7 @@ body.public-mode .site-header-actions .primary-btn{
 
   .cinema-services-head{
     grid-template-columns:1fr;
+    gap:24px;
   }
 
   .cinema-services-copy{
@@ -3758,24 +3785,33 @@ body.public-mode .site-header-actions .primary-btn{
   }
 }
 
+/* Mobile */
 @media(max-width:760px){
   .cinema-hero{
     min-height:700px;
     align-items:flex-start;
-    padding:54px 22px 80px;
+    padding:52px 20px 86px;
+  }
+
+  .cinema-left{
+    width:100%;
   }
 
   .cinema-bg{
-    background-position:70% center;
+    background-position:68% center;
   }
 
   .cinema-shade{
     background:
-      linear-gradient(180deg,rgba(5,9,10,.96) 0%,rgba(5,9,10,.90) 48%,rgba(5,9,10,.50) 100%);
+      linear-gradient(180deg,rgba(5,9,10,.97) 0%,rgba(5,9,10,.92) 50%,rgba(5,9,10,.56) 100%);
   }
 
   .cinema-left h1{
-    font-size:50px;
+    font-size:49px;
+  }
+
+  .cinema-left>p{
+    font-size:12px;
   }
 
   .cinema-actions{
@@ -3787,19 +3823,18 @@ body.public-mode .site-header-actions .primary-btn{
   }
 
   .cinema-right-mark,
-  .cinema-social,
   .cinema-quality{
     display:none;
   }
 
   .cinema-stats{
     width:calc(100% - 28px);
-    margin-top:-30px;
+    margin-top:-32px;
     grid-template-columns:1fr 1fr;
   }
 
   .cinema-stats>div{
-    padding:15px;
+    padding:14px;
   }
 
   .cinema-services,
