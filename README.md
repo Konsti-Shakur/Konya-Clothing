@@ -1,17 +1,13 @@
-# Konya Clothing V3.18 – Visual Polish
+# Konya Clothing V3.19 – Cinematic Homepage
 
-Diese Version korrigiert gezielt die optischen Probleme aus dem Screenshot.
+Die Startseite wurde an das gewünschte Mockup angepasst.
 
-## Die 5 wichtigsten Änderungen
+## 5 große Änderungen
 
-1. Hero-Proportionen neu abgestimmt
-2. Bannerkarte sauber skaliert
-3. Express- und Workflow-Karten neu positioniert
-4. Typografie, Abstände und Abschnittshöhen bereinigt
-5. Desktop-, Tablet- und Mobile-Layout stabilisiert
+1. Cinematischer Hero mit Banner im Hintergrund
+2. Große zweifarbige Headline mit klaren CTA-Buttons
+3. Vorteilspunkte + Statistikleiste unter dem Hero
+4. Neue Leistungen- und Showcase-Bereiche im gleichen Stil
+5. Responsive Anpassungen für Desktop, Tablet und Handy
 
-Zusätzlich wurden Überläufe und unsaubere Ausrichtungen im Showcase, Preisbereich und Header reduziert.
-
-Syntaxprüfung:
-- app.js
-- server.js
+Adminbereich, Kundenbereich, PostgreSQL und bestehende Funktionen bleiben erhalten.

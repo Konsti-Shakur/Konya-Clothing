@@ -3273,3 +3273,553 @@ body.public-mode img{
     grid-template-columns:1fr;
   }
 }
+
+/* =========================================================
+   V3.19 – CINEMATIC KONYA HOMEPAGE
+   Inspired by the approved homepage mockup
+   ========================================================= */
+
+body.public-mode .site-main{
+  width:100%;
+  max-width:none;
+  padding:0 0 88px;
+}
+
+body.public-mode .site-header{
+  height:78px;
+  padding:0 max(44px,calc((100vw - 1600px)/2));
+  background:rgba(4,7,8,.92);
+  border-bottom:1px solid rgba(255,255,255,.055);
+  box-shadow:0 8px 30px rgba(0,0,0,.18);
+}
+
+body.public-mode .site-brand img{
+  width:42px;height:42px;
+}
+
+body.public-mode .site-nav{
+  gap:26px;
+}
+
+body.public-mode .site-nav a{
+  font-size:10px;
+}
+
+body.public-mode .site-header-actions .primary-btn{
+  min-height:42px;
+  padding:0 18px;
+  box-shadow:0 0 28px rgba(32,212,207,.18);
+}
+
+.cinema-hero{
+  position:relative;
+  min-height:610px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  padding:66px max(56px,calc((100vw - 1600px)/2));
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.cinema-bg{
+  position:absolute;
+  inset:0;
+  background:url("/assets/konya-banner.png") 73% center/cover no-repeat;
+  filter:saturate(.92) contrast(1.06) brightness(.8);
+  transform:scale(1.01);
+}
+
+.cinema-shade{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,#05090a 0%,rgba(5,9,10,.98) 25%,rgba(5,9,10,.84) 43%,rgba(5,9,10,.34) 64%,rgba(5,9,10,.14) 100%),
+    linear-gradient(180deg,rgba(3,6,7,.10),rgba(3,6,7,.34));
+}
+
+.cinema-left{
+  position:relative;
+  z-index:3;
+  max-width:760px;
+}
+
+.cinema-kicker{
+  color:#32d9d4;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+.cinema-left h1{
+  margin:20px 0 20px;
+  font-size:clamp(58px,6.2vw,94px);
+  line-height:.88;
+  letter-spacing:-.062em;
+  color:#fff;
+}
+
+.cinema-left h1 span{
+  color:#28d3cf;
+}
+
+.cinema-left>p{
+  max-width:660px;
+  color:#c1ccce;
+  font-size:15px;
+  line-height:1.7;
+}
+
+.cinema-actions{
+  display:flex;
+  gap:14px;
+  margin-top:28px;
+}
+
+.cinema-btn{
+  min-height:50px;
+  padding:0 23px;
+  border-radius:8px;
+  font-size:11px;
+}
+
+.cinema-btn span{
+  margin-left:8px;
+}
+
+.cinema-outline-btn{
+  min-height:50px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 20px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;
+  background:rgba(5,9,10,.46);
+  color:#e9f1f2;
+  font-size:10px;
+  font-weight:800;
+  text-decoration:none;
+  cursor:pointer;
+  backdrop-filter:blur(8px);
+}
+
+.cinema-outline-btn:hover{
+  border-color:rgba(32,212,207,.34);
+  color:#fff;
+}
+
+.cinema-benefits{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-top:38px;
+  max-width:760px;
+}
+
+.cinema-benefits>div{
+  display:grid;
+  grid-template-columns:28px 1fr;
+  gap:8px;
+  align-items:center;
+}
+
+.cinema-benefits b{
+  color:#2bdad5;
+  font-size:21px;
+  font-weight:400;
+}
+
+.cinema-benefits span{
+  display:grid;
+}
+
+.cinema-benefits strong{
+  font-size:9px;
+}
+
+.cinema-benefits small{
+  margin-top:3px;
+  color:#7f9093;
+  font-size:8px;
+}
+
+.cinema-right-mark{
+  position:absolute;
+  right:7%;
+  top:54px;
+  z-index:3;
+  display:grid;
+  gap:8px;
+  color:rgba(255,255,255,.76);
+  font-size:8px;
+  letter-spacing:.42em;
+  text-align:right;
+}
+
+.cinema-social{
+  position:absolute;
+  z-index:3;
+  right:3.2%;
+  bottom:100px;
+  display:grid;
+  gap:14px;
+  color:#29d8d3;
+  font-size:12px;
+}
+
+.cinema-quality{
+  position:absolute;
+  z-index:3;
+  left:18px;
+  bottom:36px;
+  display:grid;
+  gap:7px;
+  color:#8ea0a3;
+  font-size:8px;
+  letter-spacing:.28em;
+}
+
+.cinema-stats{
+  width:min(1380px,calc(100% - 80px));
+  margin:-42px auto 0;
+  position:relative;
+  z-index:5;
+  display:grid;
+  grid-template-columns:repeat(4,1fr) 1.3fr;
+  min-height:92px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  background:rgba(7,12,13,.93);
+  box-shadow:0 20px 50px rgba(0,0,0,.22);
+  backdrop-filter:blur(18px);
+}
+
+.cinema-stats>div{
+  display:grid;
+  grid-template-columns:34px auto;
+  align-content:center;
+  column-gap:12px;
+  padding:18px 22px;
+}
+
+.cinema-stats .stat-icon{
+  grid-row:1/3;
+  color:#2bdad5;
+  font-size:24px;
+}
+
+.cinema-stats strong{
+  font-size:21px;
+}
+
+.cinema-stats small{
+  color:#718184;
+  font-size:8px;
+  letter-spacing:.14em;
+}
+
+.cinema-partner{
+  border-left:1px solid rgba(255,255,255,.06);
+  grid-template-columns:1fr !important;
+  align-content:center !important;
+}
+
+.cinema-partner span{
+  color:#98a6a8;
+  font-size:10px;
+}
+
+.cinema-partner strong{
+  margin-top:3px;
+  font-size:12px;
+}
+
+.cinema-partner i{
+  width:42px;height:2px;
+  margin-top:10px;
+  background:#2bdad5;
+}
+
+.cinema-services,
+.cinema-showcase-preview,
+.cinema-final{
+  width:min(1440px,calc(100% - 80px));
+  margin:0 auto;
+}
+
+.cinema-services{
+  padding:86px 0 50px;
+}
+
+.cinema-services-head{
+  display:grid;
+  grid-template-columns:1fr .8fr;
+  gap:64px;
+  align-items:end;
+}
+
+.cinema-services-head h2,
+.cinema-showcase-head h2,
+.cinema-final h2{
+  margin:10px 0 0;
+  font-size:clamp(38px,4.8vw,66px);
+  line-height:.95;
+  letter-spacing:-.052em;
+}
+
+.cinema-services-head h2 span{
+  color:#2bdad5;
+}
+
+.cinema-services-copy{
+  display:grid;
+  justify-items:end;
+  gap:16px;
+}
+
+.cinema-services-copy p{
+  max-width:520px;
+  color:#8e9c9f;
+  font-size:10px;
+  line-height:1.65;
+  text-align:right;
+}
+
+.cinema-service-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:34px;
+}
+
+.cinema-service-grid article{
+  min-height:220px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;
+  background:linear-gradient(180deg,#0a1011,#071011);
+}
+
+.cinema-service-grid article>span{
+  color:#2bdad5;
+  font-size:8px;
+  font-weight:800;
+}
+
+.cinema-service-grid h3{
+  margin:46px 0 8px;
+  font-size:16px;
+}
+
+.cinema-service-grid p{
+  color:#7f8c8e;
+  font-size:9px;
+  line-height:1.55;
+}
+
+.cinema-service-grid button{
+  margin-top:18px;
+  border:0;
+  padding:0;
+  background:transparent;
+  color:#2bdad5;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.cinema-showcase-preview{
+  padding:40px 0 70px;
+}
+
+.cinema-showcase-head{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:30px;
+  margin-bottom:26px;
+}
+
+.cinema-showcase-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.cinema-showcase-grid article{
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;
+  overflow:hidden;
+  background:#080d0e;
+}
+
+.cinema-showcase-art{
+  min-height:280px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:18px;
+  background:
+    linear-gradient(180deg,transparent,rgba(5,8,9,.82)),
+    radial-gradient(circle at 70% 25%,rgba(32,212,207,.16),transparent 22%),
+    linear-gradient(145deg,#11191b,#070b0c 60%,#0d1d1f);
+}
+
+.cinema-showcase-art span{
+  width:max-content;
+  margin-bottom:auto;
+  padding:5px 7px;
+  border:1px solid rgba(255,255,255,.10);
+  color:#97a5a7;
+  font-size:7px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.cinema-showcase-art strong{
+  font-size:22px;
+  max-width:330px;
+}
+
+.cinema-showcase-grid p{
+  min-height:52px;
+  margin:0;
+  padding:13px 15px;
+  color:#7e8b8d;
+  font-size:9px;
+  line-height:1.55;
+}
+
+.cinema-final{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:40px;
+  padding:58px 0 10px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+
+.cinema-final>div:first-child{
+  max-width:820px;
+}
+
+.cinema-final p{
+  max-width:680px;
+  color:#839194;
+  font-size:10px;
+  line-height:1.6;
+}
+
+.cinema-final>div:last-child{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+@media(max-width:1100px){
+  .cinema-hero{
+    padding-left:36px;
+    padding-right:36px;
+  }
+
+  .cinema-left{
+    max-width:680px;
+  }
+
+  .cinema-benefits{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .cinema-stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .cinema-partner{
+    grid-column:span 2;
+    border-left:0;
+    border-top:1px solid rgba(255,255,255,.06);
+  }
+
+  .cinema-services-head{
+    grid-template-columns:1fr;
+  }
+
+  .cinema-services-copy{
+    justify-items:start;
+  }
+
+  .cinema-services-copy p{
+    text-align:left;
+  }
+
+  .cinema-service-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:760px){
+  .cinema-hero{
+    min-height:700px;
+    align-items:flex-start;
+    padding:54px 22px 80px;
+  }
+
+  .cinema-bg{
+    background-position:70% center;
+  }
+
+  .cinema-shade{
+    background:
+      linear-gradient(180deg,rgba(5,9,10,.96) 0%,rgba(5,9,10,.90) 48%,rgba(5,9,10,.50) 100%);
+  }
+
+  .cinema-left h1{
+    font-size:50px;
+  }
+
+  .cinema-actions{
+    display:grid;
+  }
+
+  .cinema-benefits{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .cinema-right-mark,
+  .cinema-social,
+  .cinema-quality{
+    display:none;
+  }
+
+  .cinema-stats{
+    width:calc(100% - 28px);
+    margin-top:-30px;
+    grid-template-columns:1fr 1fr;
+  }
+
+  .cinema-stats>div{
+    padding:15px;
+  }
+
+  .cinema-services,
+  .cinema-showcase-preview,
+  .cinema-final{
+    width:calc(100% - 28px);
+  }
+
+  .cinema-service-grid,
+  .cinema-showcase-grid{
+    grid-template-columns:1fr;
+  }
+
+  .cinema-showcase-head,
+  .cinema-final{
+    display:block;
+  }
+
+  .cinema-showcase-head button,
+  .cinema-final>div:last-child{
+    margin-top:18px;
+  }
+}
