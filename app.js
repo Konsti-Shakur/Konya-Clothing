@@ -108,12 +108,13 @@ state.tickets.forEach(t=>{
   if(!t.createdAt) t.createdAt="05.09.2026";
 });
 state.employees.forEach((e,i)=>{
-  if(e.status===undefined) e.status="Aktiv";
-  if(e.permissions===undefined){
+  if(e.status===undefined) e.status=e.active===false?"Inaktiv":"Aktiv";
+  if(!Array.isArray(e.permissions)){
     e.permissions=e.role==="Inhaber / Admin"
       ? ["Aufträge","Kunden","Tickets","Showcase","Preise","Mitarbeiter","Logs"]
       : ["Aufträge","Kunden","Tickets","Showcase"];
   }
+  delete e.active;
   if(e.note===undefined) e.note="";
   if(e.joinedAt===undefined) e.joinedAt=i===0?"01.09.2026":"03.09.2026";
 });
@@ -124,7 +125,32 @@ if(demoHoodie){
   demoHoodie.priceMax=12;
   if(Number(demoHoodie.finalPrice)===5) demoHoodie.finalPrice=10;
 }
-const save = () => localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
+
+function isOrderOpen(o){ return !["Fertig","Ausgeliefert","Storniert"].includes(o.status); }
+function isTicketOpen(t){ return !["Gelöst","Geschlossen"].includes(t.status); }
+
+function nextOrderId(){
+  const nums=state.orders
+    .map(o=>Number(String(o.id||"").match(/(\d{4})$/)?.[1]||0))
+    .filter(Boolean);
+  const next=Math.max(42,...nums)+1;
+  return `KC-2026-${String(next).padStart(4,"0")}`;
+}
+
+function syncCustomerMetrics(){
+  state.customers.forEach(c=>{
+    const orders=state.orders.filter(o=>o.client===c.name);
+    c.orders=orders.length;
+    c.revenue=orders
+      .filter(o=>o.paymentStatus==="Bezahlt" && Number(o.finalPrice)>0)
+      .reduce((sum,o)=>sum+Number(o.finalPrice),0);
+  });
+}
+
+const save = () => {
+  syncCustomerMetrics();
+  localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
+};
 
 async function filesToAttachments(fileList){
   const files=[...fileList].slice(0,6);
@@ -205,6 +231,8 @@ function addNotification(message,type="system"){
   if(setting!=="system" && state.notificationSettings && state.notificationSettings[setting]===false) return;
   state.notifications.unshift(message);
   state.notifications=state.notifications.slice(0,30);
+  const dot=document.getElementById("notifyDot");
+  if(dot) dot.style.display="block";
 }
 
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
@@ -212,21 +240,21 @@ function kpi(label,val,foot,cls=""){return `<div class="kpi ${cls}"><div class="
 
 function dashboard(){
   const urgent=state.tickets.filter(x=>x.priority==="Dringend" && x.status!=="Geschlossen").length;
-  const openTickets=state.tickets.filter(x=>x.status!=="Geschlossen").length;
+  const openTickets=state.tickets.filter(isTicketOpen).length;
   title.textContent="Übersicht"; subtitle.textContent="Alles Wichtige zu Konya Clothing auf einen Blick.";
   root.innerHTML=`
     <div class="grid kpi-grid">
       ${kpi("Designs",state.clothing.length,"Gesamt im System")}
-      ${kpi("Kunden",state.customers.length,"Aktive Kunden")}
-      ${kpi("Offene Aufträge",state.orders.length,"Aktuell in Arbeit")}
+      ${kpi("Kunden",state.customers.filter(c=>c.status!=="Inaktiv").length,"Aktive Kunden")}
+      ${kpi("Offene Aufträge",state.orders.filter(isOrderOpen).length,"Aktuell in Arbeit")}
       ${kpi("Offene Tickets",openTickets,"Support & Änderungen")}
       ${kpi("Dringend",urgent,"Benötigt Aufmerksamkeit",urgent?"alert":"")}
       ${kpi("Offene Zahlungen",state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length,"Noch nicht bezahlt")}
     </div>
     <div class="grid two-col">
-      <div class="panel"><div class="panel-head"><h3>Offene Aufträge</h3><span>${state.orders.length} aktuell</span></div><div class="panel-body table-wrap">
+      <div class="panel"><div class="panel-head"><h3>Offene Aufträge</h3><span>${state.orders.filter(isOrderOpen).length} aktuell</span></div><div class="panel-body table-wrap">
       <table><thead><tr><th>Auftrag</th><th>Kunde</th><th>Leistung</th><th>Preis</th><th>Status</th><th>Fortschritt</th></tr></thead>
-      <tbody>${state.orders.map(o=>`<tr onclick="openOrderDetail('${o.id}')" style="cursor:pointer"><td><b>${o.id}</b></td><td>${o.client}</td><td>${o.type}</td><td>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</td><td><span class="status ${statusClass(o.status)}">${o.status}</span></td><td><div class="progress"><span style="width:${o.progress}%"></span></div></td></tr>`).join("")}</tbody></table></div></div>
+      <tbody>${state.orders.filter(isOrderOpen).map(o=>`<tr onclick="openOrderDetail('${o.id}')" style="cursor:pointer"><td><b>${o.id}</b></td><td>${o.client}</td><td>${o.type}</td><td>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</td><td><span class="status ${statusClass(o.status)}">${o.status}</span></td><td><div class="progress"><span style="width:${o.progress}%"></span></div></td></tr>`).join("")}</tbody></table></div></div>
       <div class="panel"><div class="panel-head"><h3>Was braucht Aufmerksamkeit?</h3><span>Live</span></div><div class="panel-body attention-list">
         <div class="attention-item"><div class="attention-icon">!</div><div><strong>${urgent} dringende Tickets</strong><small>Supportfälle mit hoher Priorität prüfen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis nach Aufwand festlegen.</small></div></div>
@@ -244,7 +272,7 @@ function genericTable(view){
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
     customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
     tickets:{t:"Tickets",s:"Support, Änderungswünsche, Auftragsbezug und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Auftrag","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[`<b onclick="openTicketDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.title,x.client,x.orderId||"—",`<span class="status ${x.priority==="Dringend"?"danger":x.priority==="Hoch"?"wait":"new"}">${x.priority}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
-    employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
+    employees:{t:"Mitarbeiter",s:"Team, Rollen, Rechte und Auslastung verwalten.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status","Aufträge","Tickets"],rows:state.employees.map(x=>[`<b onclick="openEmployeeDetail('${x.name.replace(/'/g,"\\'")}')" class="table-link">${x.name}</b>`,x.role,(x.permissions||[]).join(", "),`<span class="status ${x.status==="Aktiv"?"done":"danger"}">${x.status}</span>`,state.orders.filter(o=>o.designer===x.name && isOrderOpen(o)).length,state.tickets.filter(t=>t.assigned===x.name && isTicketOpen(t)).length]),action:"openEmployeeModal()"}
   };
   if(view==="orders") return renderOrdersTable();
   const c=configs[view]; title.textContent=c.t; subtitle.textContent=c.s;
@@ -526,7 +554,7 @@ window.openOrderModal=function(){
     <div class="form-group"><label>Kunde</label><input name="client" required></div>
     <div class="form-group"><label>Organisation / Fraktion (optional)</label><input name="organization" placeholder="Privat"></div>
     <div class="form-group full"><label>Leistung</label><select id="orderService" name="type">${serviceOptions()}</select><div id="orderQuote" class="quote-box"></div></div>
-    <div class="form-group"><label>Designer</label><input name="designer" value="Konsti Shakur"></div>
+    <div class="form-group"><label>Designer</label><select name="designer">${state.employees.filter(e=>e.status==="Aktiv").map(e=>`<option>${e.name}</option>`).join("")}</select></div>
     <div class="form-group"><label>Deadline</label><input name="deadline" type="date" required></div>
     <div class="form-group full"><label>Wunsch / Beschreibung</label><textarea name="description" placeholder="Farben, Logo, Muster, Referenzen ..."></textarea></div>
     <div class="form-group full"><label>Referenzen / Logo / Texturen</label><div class="upload-zone"><input id="orderFiles" type="file" multiple accept="image/*,.png,.jpg,.jpeg,.webp,.pdf,.zip"><div class="upload-hint">Bis zu 6 Dateien, maximal 2 MB pro Datei. Ideal für Logos, Referenzbilder und kleine Texturen.</div></div></div>`));
@@ -536,8 +564,8 @@ window.openOrderModal=function(){
     const f=Object.fromEntries(new FormData(e.target));
     const s=findService(f.type);
     const attachments=await filesToAttachments(document.getElementById("orderFiles").files);
-    const next=43+state.orders.length;
-    state.orders.unshift({id:`KC-2026-${String(next).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:f.designer,priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:f.deadline,status:"Anfrage",progress:0,priority:"Normal",description:f.description,attachments});
+    const newId=nextOrderId();
+    state.orders.unshift({id:newId,client:f.client,organization:f.organization||"Privat",type:f.type,designer:f.designer,priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:f.deadline,status:"Anfrage",progress:0,priority:"Normal",description:f.description,attachments});
     state.logs.unshift(`Neuer Auftrag für ${f.client} angelegt (${attachments.length} Datei(en))`);
     save();closeModal();render("orders");showToast("Auftrag wurde angelegt.");
   };
@@ -557,8 +585,16 @@ window.openPublicOrderModal=function(){
     const f=Object.fromEntries(new FormData(e.target));
     const s=findService(f.type);
     const attachments=await filesToAttachments(document.getElementById("publicFiles").files);
-    state.customers.push({name:f.client,discord:f.discord,organization:f.organization||"Privat",orders:1,revenue:0,status:"Neu"});
-    state.orders.unshift({id:`KC-2026-${String(50+state.orders.length).padStart(4,"0")}`,client:f.client,organization:f.organization||"Privat",type:f.type,designer:"Noch nicht zugewiesen",priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:"Offen",status:"Anfrage",progress:0,priority:"Normal",description:f.description,attachments});
+    const existingCustomer=state.customers.find(c=>c.name.toLowerCase()===f.client.toLowerCase() || (f.discord && c.discord===f.discord));
+    if(existingCustomer){
+      existingCustomer.discord=f.discord||existingCustomer.discord;
+      existingCustomer.organization=f.organization||existingCustomer.organization||"Privat";
+      if(existingCustomer.status==="Neu") existingCustomer.status="Aktiv";
+    }else{
+      state.customers.push({name:f.client,discord:f.discord,organization:f.organization||"Privat",orders:0,revenue:0,status:"Aktiv"});
+    }
+    const newId=nextOrderId();
+    state.orders.unshift({id:newId,client:f.client,organization:f.organization||"Privat",type:f.type,designer:"Noch nicht zugewiesen",priceMin:s.min,priceMax:s.max,finalPrice:null,deadline:"Offen",status:"Anfrage",progress:0,priority:"Normal",description:f.description,attachments});
     state.logs.unshift(`Neue Kundenanfrage von ${f.client} (${attachments.length} Datei(en))`);addNotification(`Neue Bestellung von ${f.client}: ${f.type}`,"newOrder");
     save();closeModal();showToast("Anfrage wurde gesendet.");
   };
@@ -573,7 +609,7 @@ window.openOrderDetail=function(id){
         <h3 style="margin-top:0">Auftragsverwaltung</h3>
         <label class="inline-note">Designer</label>
         <select class="field" id="designerInput" style="width:100%;margin:6px 0 10px">
-          ${state.employees.map(e=>`<option ${e.name===o.designer?"selected":""}>${e.name}</option>`).join("")}
+          ${state.employees.filter(e=>e.status==="Aktiv" || e.name===o.designer).map(e=>`<option ${e.name===o.designer?"selected":""}>${e.name}</option>`).join("")}
           ${!state.employees.some(e=>e.name===o.designer)?`<option selected>${o.designer}</option>`:""}
         </select>
         <label class="inline-note">Priorität</label>
@@ -634,6 +670,7 @@ window.saveOrderAdmin=function(id){
   o.deadline=document.getElementById("deadlineInput").value || o.deadline;
   o.progress=Number(document.getElementById("progressInput").value);
   o.internalNote=document.getElementById("internalNoteInput").value.trim();
+  if(["Fertig","Ausgeliefert"].includes(o.status)) o.progress=100;
   o.history=o.history||[]; const date=new Date().toLocaleDateString("de-DE");
   if(oldDesigner!==o.designer) o.history.unshift({label:`Designer: ${o.designer}`,date});
   if(oldPriority!==o.priority) o.history.unshift({label:`Priorität: ${o.priority}`,date});
@@ -663,7 +700,18 @@ window.saveOrderPreview=async function(id){
   showToast("Kundenvorschau gespeichert.");
 };
 
-window.saveFinalPrice=function(id){const o=state.orders.find(x=>x.id===id);const val=Number(document.getElementById("finalPriceInput").value);o.finalPrice=val;o.status=o.status==="Anfrage"?"Preisangebot":o.status;if(o.paymentStatus==="Nicht berechnet")o.paymentStatus="Zahlung offen";o.history=o.history||[];o.history.unshift({label:`Preisangebot ${eur(val)}`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");};
+window.saveFinalPrice=function(id){
+  const o=state.orders.find(x=>x.id===id); if(!o) return;
+  const val=Number(document.getElementById("finalPriceInput").value);
+  if(!Number.isFinite(val) || val<=0){showToast("Bitte einen gültigen Endpreis eingeben.");return;}
+  o.finalPrice=val;
+  o.status=o.status==="Anfrage"?"Preisangebot":o.status;
+  if(o.paymentStatus==="Nicht berechnet") o.paymentStatus="Zahlung offen";
+  o.history=o.history||[];
+  o.history.unshift({label:`Preisangebot ${eur(val)}`,date:new Date().toLocaleDateString("de-DE")});
+  state.logs.unshift(`Preisangebot für ${id} auf ${eur(val)} gesetzt`);
+  save();closeModal();render("orders");showToast("Endpreis wurde gespeichert.");
+};
 
 window.savePaymentStatus=function(id){
   const o=state.orders.find(x=>x.id===id);
@@ -673,10 +721,9 @@ window.savePaymentStatus=function(id){
   o.paymentStatus=newStatus;
   o.invoiceNote=note;
   if(newStatus==="Bezahlt" && previous!=="Bezahlt"){
+    if(!o.finalPrice){showToast("Bitte zuerst einen Endpreis festlegen.");return;}
     o.paidAt=new Date().toLocaleDateString("de-DE");
-    addNotification(`${id}: Zahlung über ${o.finalPrice?eur(o.finalPrice):"den Auftrag"} erhalten.`,"paymentReceived");
-    const c=state.customers.find(c=>c.name===o.client);
-    if(c && o.finalPrice) c.revenue=Number(c.revenue||0)+Number(o.finalPrice);
+    addNotification(`${id}: Zahlung über ${eur(o.finalPrice)} erhalten.`,"paymentReceived");
   }
   if(newStatus!=="Bezahlt") o.paidAt="";
   o.history=o.history||[];o.history.unshift({label:`Zahlung: ${newStatus}`,date:new Date().toLocaleDateString("de-DE")});state.logs.unshift(`${id}: Zahlungsstatus auf "${newStatus}" gesetzt`);
@@ -691,7 +738,7 @@ window.openTicketModal=function(){
     <div class="form-group"><label>Kunde</label><input name="client" required></div>
     <div class="form-group"><label>Auftrag verknüpfen</label><select name="orderId"><option value="">Kein Auftrag</option>${state.orders.map(o=>`<option value="${o.id}">${o.id} · ${o.client}</option>`).join("")}</select></div>
     <div class="form-group"><label>Priorität</label><select name="priority"><option>Normal</option><option>Hoch</option><option>Dringend</option></select></div>
-    <div class="form-group"><label>Zuständig</label><select name="assigned">${state.employees.map(e=>`<option>${e.name}</option>`).join("")}</select></div>
+    <div class="form-group"><label>Zuständig</label><select name="assigned">${state.employees.filter(e=>e.status==="Aktiv").map(e=>`<option>${e.name}</option>`).join("")}</select></div>
     <div class="form-group"><label>Status</label><select name="status"><option>Offen</option><option>In Bearbeitung</option><option>Warten auf Kunde</option></select></div>
     <div class="form-group full"><label>Erste Nachricht</label><textarea name="message" placeholder="Worum geht es?"></textarea></div>`));
   document.getElementById("modalForm").onsubmit=e=>{
@@ -867,4 +914,10 @@ document.getElementById("notifyBtn").onclick=()=>{
   notify.classList.toggle("hidden");document.getElementById("notifyDot").style.display="none";
 };
 
+document.addEventListener("click",e=>{
+  if(!notify.contains(e.target) && !document.getElementById("notifyBtn").contains(e.target)){
+    notify.classList.add("hidden");
+  }
+});
+syncCustomerMetrics();
 render("dashboard");
