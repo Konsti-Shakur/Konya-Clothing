@@ -96,6 +96,11 @@ state.orders.forEach(o=>{
     {label:o.status||"Anfrage",date:"04.09.2026"}
   ];
 });
+state.orders.forEach(o=>{
+  if(o.internalNote===undefined) o.internalNote="";
+  if(o.priority===undefined) o.priority="Normal";
+  if(o.progress===undefined) o.progress=0;
+});
 // V3.4.1 migration: repair the known demo hoodie order if an older localStorage version stored 5 €.
 const demoHoodie=state.orders.find(o=>o.id==="KC-2026-0042" && o.type==="Hoodie / Pullover");
 if(demoHoodie){
@@ -211,6 +216,7 @@ function dashboard(){
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis nach Aufwand festlegen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">✓</div><div><strong>${state.clothing.filter(c=>c.status==="Kundenvorschau").length} Vorschau wartet</strong><small>Kundenfreigabe steht noch aus.</small></div></div>
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</strong><small>Bezahlstatus der Aufträge prüfen.</small></div></div>
+        <div class="attention-item"><div class="attention-icon">!</div><div><strong>${state.orders.filter(o=>o.priority==="Dringend").length} dringende Aufträge</strong><small>Aufträge mit hoher Priorität zuerst bearbeiten.</small></div></div>
       </div></div>
     </div>`;
 }
@@ -218,7 +224,7 @@ function dashboard(){
 function genericTable(view){
   const configs={
     clothing:{t:"Clothing",s:"Designs, Versionen und Freigaben verwalten.",btn:"+ Design",headers:["Design","Kategorie","Kunde","Versionen","Status"],rows:state.clothing.map(x=>[x.name,x.category,x.customer,"v"+x.versions,`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openClothingModal()"},
-    orders:{t:"Aufträge",s:"Anfrage, Preis, Zahlung und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Organisation","Leistung","Richtpreis","Endpreis","Zahlung","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${paymentClass(x.paymentStatus)}">${x.paymentStatus}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
+    orders:{t:"Aufträge",s:"Anfrage, Preis, Zahlung und Auftragsstatus.",btn:"+ Auftrag",headers:["Auftrag","Kunde","Priorität","Organisation","Leistung","Richtpreis","Endpreis","Zahlung","Status","Deadline"],rows:state.orders.map(x=>[`<b onclick="openOrderDetail('${x.id}')" style="cursor:pointer;color:var(--accent)">${x.id}</b>`,x.client,`<span class="status ${x.priority==="Dringend"?"danger":x.priority==="Hoch"?"wait":"new"}">${x.priority}</span>`,x.organization||"Privat",x.type,`${eur(x.priceMin)} – ${eur(x.priceMax)}`,x.finalPrice?eur(x.finalPrice):"Offen",`<span class="status ${paymentClass(x.paymentStatus)}">${x.paymentStatus}</span>`,`<span class="status ${statusClass(x.status)}">${x.status}</span>`,x.deadline]),action:"openOrderModal()"},
     customers:{t:"Kunden",s:"Kundenakten, Discord, Bestellungen und Umsatz.",btn:"+ Kunde",headers:["Kunde","Discord","Organisation","Aufträge","Umsatz","Status"],rows:state.customers.map(x=>[x.name,x.discord,x.organization,x.orders,eur(x.revenue),`<span class="status ${statusClass(x.status)}">${x.status}</span>`]),action:"openCustomerModal()"},
     tickets:{t:"Tickets",s:"Support, Änderungswünsche und Zuständigkeit.",btn:"+ Ticket",headers:["Ticket","Betreff","Kunde","Priorität","Status","Zuständig"],rows:state.tickets.map(x=>[x.id,x.title,x.client,x.priority,`<span class="status ${statusClass(x.priority==="Dringend"?"Dringend":x.status)}">${x.status}</span>`,x.assigned]),action:"openTicketModal()"},
     employees:{t:"Mitarbeiter",s:"Rollen und Rechteverwaltung.",btn:"+ Mitarbeiter",headers:["Name","Rolle","Berechtigungen","Status"],rows:state.employees.map(x=>[x.name,x.role,x.permissions,x.active?'<span class="status done">Aktiv</span>':'<span class="status danger">Inaktiv</span>']),action:"openEmployeeModal()"}
@@ -490,30 +496,42 @@ window.openOrderDetail=function(id){
   modal(`<h2>${o.id}</h2><p>${o.client} · ${o.type}</p>
     <div class="order-detail-grid">
       <div class="detail-card">
-        <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
-        <div class="detail-row"><span>Endpreis</span><b>${o.finalPrice?eur(o.finalPrice):"Noch offen"}</b></div>
-        <div class="detail-row"><span>Status</span><b>${o.status}</b></div>
-        <div class="detail-row"><span>Designer</span><b>${o.designer}</b></div>
-        <div class="detail-row"><span>Deadline</span><b>${o.deadline}</b></div>
+        <h3 style="margin-top:0">Auftragsverwaltung</h3>
+        <label class="inline-note">Designer</label>
+        <select class="field" id="designerInput" style="width:100%;margin:6px 0 10px">
+          ${state.employees.map(e=>`<option ${e.name===o.designer?"selected":""}>${e.name}</option>`).join("")}
+          ${!state.employees.some(e=>e.name===o.designer)?`<option selected>${o.designer}</option>`:""}
+        </select>
+        <label class="inline-note">Priorität</label>
+        <select class="field" id="priorityInput" style="width:100%;margin:6px 0 10px">
+          ${["Niedrig","Normal","Hoch","Dringend"].map(s=>`<option ${s===o.priority?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <label class="inline-note">Status</label>
+        <select class="field" id="statusInput" style="width:100%;margin:6px 0 10px">
+          ${["Anfrage","Preisangebot","Angenommen","In Bearbeitung","Kundenvorschau","Warten auf Kunde","Änderung gewünscht","Freigegeben","Fertig","Ausgeliefert","Storniert"].map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <label class="inline-note">Deadline</label>
+        <input class="field" id="deadlineInput" type="date" value="${/^\d{4}-\d{2}-\d{2}$/.test(o.deadline||"")?o.deadline:""}" style="width:100%;margin:6px 0 10px">
+        <label class="inline-note">Fortschritt: <b id="progressLabel">${o.progress||0}%</b></label>
+        <input id="progressInput" type="range" min="0" max="100" step="5" value="${o.progress||0}" style="width:100%;margin:8px 0 12px" oninput="document.getElementById('progressLabel').textContent=this.value+'%'">
+        <label class="inline-note">Interne Notiz</label>
+        <textarea id="internalNoteInput" placeholder="Nur für Mitarbeiter sichtbar ..." style="width:100%;margin-top:6px">${o.internalNote||""}</textarea>
+        <button class="primary-btn" style="margin-top:10px;width:100%" onclick="saveOrderAdmin('${o.id}')">Auftragsdaten speichern</button>
       </div>
       <div class="detail-card">
-        <label class="inline-note">Endpreis festlegen</label>
+        <h3 style="margin-top:0">Preis & Zahlung</h3>
+        <div class="detail-row"><span>Richtpreis</span><b>${eur(o.priceMin)} – ${eur(o.priceMax)}</b></div>
+        <label class="inline-note" style="display:block;margin-top:10px">Endpreis festlegen</label>
         <input class="field" id="finalPriceInput" type="number" step="0.5" value="${o.finalPrice??o.priceMin}" style="width:100%;margin-top:8px">
         <button class="primary-btn" style="margin-top:10px;width:100%" onclick="saveFinalPrice('${o.id}')">Preisangebot speichern</button>
-        <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
-      </div>
-      <div class="detail-card">
-        <h3 style="margin-top:0">Zahlung</h3>
-        <div class="detail-row"><span>Status</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
-        <div class="detail-row"><span>Betrag</span><b>${o.finalPrice?eur(o.finalPrice):"Noch kein Endpreis"}</b></div>
-        <div class="detail-row"><span>Bezahlt am</span><b>${o.paidAt||"—"}</b></div>
-        <label class="inline-note" style="display:block;margin-top:10px">Zahlungsstatus</label>
-        <select class="field" id="paymentStatusInput" style="width:100%;margin-top:7px">
+        <div style="height:12px"></div>
+        <div class="detail-row"><span>Zahlungsstatus</span><b><span class="status ${paymentClass(o.paymentStatus)}">${o.paymentStatus}</span></b></div>
+        <select class="field" id="paymentStatusInput" style="width:100%;margin-top:8px">
           ${["Nicht berechnet","Zahlung offen","Bezahlt","Storniert"].map(s=>`<option ${s===o.paymentStatus?"selected":""}>${s}</option>`).join("")}
         </select>
-        <label class="inline-note" style="display:block;margin-top:10px">Notiz</label>
-        <input class="field" id="invoiceNoteInput" value="${o.invoiceNote||""}" placeholder="z. B. PayPal / Überweisung / Bar" style="width:100%;margin-top:7px">
-        <button class="primary-btn" style="margin-top:10px;width:100%" onclick="savePaymentStatus('${o.id}')">Zahlung speichern</button>
+        <input class="field" id="invoiceNoteInput" value="${o.invoiceNote||""}" placeholder="Zahlungsnotiz" style="width:100%;margin-top:8px">
+        <button class="secondary-btn" style="margin-top:10px;width:100%" onclick="savePaymentStatus('${o.id}')">Zahlung speichern</button>
+        <div class="quote-box"><strong>Beschreibung</strong><span class="inline-note">${o.description||"Keine Beschreibung"}</span></div>
       </div>
     </div>
     <div class="detail-card" style="margin-top:14px">
@@ -522,7 +540,7 @@ window.openOrderDetail=function(id){
       <div class="upload-zone" style="margin-top:12px">
         <label>Neue Vorschau hochladen</label>
         <input id="previewFileInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.pdf">
-        <div class="upload-hint">Eine neue Vorschau erhöht automatisch die Versionsnummer und setzt den Status auf „Wartet auf Kunde“.</div>
+        <div class="upload-hint">Eine neue Vorschau erhöht automatisch die Versionsnummer.</div>
         <button class="primary-btn" style="margin-top:10px" onclick="saveOrderPreview('${o.id}')">Vorschau speichern</button>
       </div>
       ${o.changeRequest?`<div class="change-request-box"><strong>Änderungswunsch des Kunden</strong><p>${o.changeRequest}</p></div>`:""}
@@ -533,6 +551,25 @@ window.openOrderDetail=function(id){
       ${files.length?`<div class="attachment-grid">${files.map(attachmentHtml).join("")}</div>`:""}
     </div>`);
 }
+window.saveOrderAdmin=function(id){
+  const o=state.orders.find(x=>x.id===id); if(!o) return;
+  const oldStatus=o.status, oldDesigner=o.designer, oldPriority=o.priority, oldDeadline=o.deadline, oldProgress=o.progress;
+  o.designer=document.getElementById("designerInput").value;
+  o.priority=document.getElementById("priorityInput").value;
+  o.status=document.getElementById("statusInput").value;
+  o.deadline=document.getElementById("deadlineInput").value || o.deadline;
+  o.progress=Number(document.getElementById("progressInput").value);
+  o.internalNote=document.getElementById("internalNoteInput").value.trim();
+  o.history=o.history||[]; const date=new Date().toLocaleDateString("de-DE");
+  if(oldDesigner!==o.designer) o.history.unshift({label:`Designer: ${o.designer}`,date});
+  if(oldPriority!==o.priority) o.history.unshift({label:`Priorität: ${o.priority}`,date});
+  if(oldStatus!==o.status) o.history.unshift({label:`Status: ${o.status}`,date});
+  if(oldDeadline!==o.deadline) o.history.unshift({label:`Deadline: ${o.deadline}`,date});
+  if(oldProgress!==o.progress) o.history.unshift({label:`Fortschritt: ${o.progress}%`,date});
+  state.logs.unshift(`${id}: Auftragsverwaltung aktualisiert`);
+  save(); closeModal(); render("orders"); showToast("Auftrag wurde aktualisiert.");
+};
+
 window.saveOrderPreview=async function(id){
   const o=state.orders.find(x=>x.id===id);
   const input=document.getElementById("previewFileInput");

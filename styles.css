@@ -403,3 +403,6 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
 .customer-order-link span,.customer-order-link small{color:var(--muted);font-size:11px}
 .customer-order-link b{font-size:12px}
 @media(max-width:750px){.customer-search-row{flex-direction:column;align-items:stretch}.customer-order-link{grid-template-columns:1fr}}
+
+#progressInput{accent-color:#24d7d1}
+.detail-card textarea{min-height:100px;resize:vertical;background:#0a1012;color:#fff;border:1px solid #23353a;border-radius:9px;padding:10px}
