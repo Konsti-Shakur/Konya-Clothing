@@ -291,31 +291,164 @@ function kpi(label,val,foot,cls=""){return `<div class="kpi ${cls}"><div class="
 function dashboard(){
   const urgent=state.tickets.filter(x=>x.priority==="Dringend" && x.status!=="Geschlossen").length;
   const openTickets=state.tickets.filter(isTicketOpen).length;
-  title.textContent="Übersicht"; subtitle.textContent="Alles Wichtige zu Konya Clothing auf einen Blick.";
+  const openOrders=state.orders.filter(isOrderOpen);
+  const openPayments=state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length;
+  const activeCustomers=state.customers.filter(c=>c.status!=="Inaktiv").length;
+  const previewWaiting=state.clothing.filter(c=>c.status==="Kundenvorschau").length;
+  const activeEmployees=state.employees.filter(e=>e.status==="Aktiv").length;
+  const completedOrders=state.orders.filter(o=>["Fertig","Ausgeliefert"].includes(o.status)).length;
+
+  title.textContent="Dashboard";
+  subtitle.textContent="Deine Aufträge, Kunden und offenen Aufgaben auf einen Blick.";
+
   root.innerHTML=`
-    <div class="grid kpi-grid">
-      ${kpi("Designs",state.clothing.length,"Gesamt im System")}
-      ${kpi("Kunden",state.customers.filter(c=>c.status!=="Inaktiv").length,"Aktive Kunden")}
-      ${kpi("Offene Aufträge",state.orders.filter(isOrderOpen).length,"Aktuell in Arbeit")}
-      ${kpi("Offene Tickets",openTickets,"Support & Änderungen")}
-      ${kpi("Dringend",urgent,"Benötigt Aufmerksamkeit",urgent?"alert":"")}
-      ${kpi("Offene Zahlungen",state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length,"Noch nicht bezahlt")}
-    </div>
-    <div class="grid two-col">
-      <div class="panel"><div class="panel-head"><h3>Offene Aufträge</h3><span>${state.orders.filter(isOrderOpen).length} aktuell</span></div><div class="panel-body table-wrap">
-      <table><thead><tr><th>Auftrag</th><th>Kunde</th><th>Leistung</th><th>Preis</th><th>Status</th><th>Fortschritt</th></tr></thead>
-      <tbody>${state.orders.filter(isOrderOpen).map(o=>`<tr onclick="openOrderDetail('${o.id}')" style="cursor:pointer"><td><b>${o.id}</b></td><td>${o.client}</td><td>${o.type}</td><td>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</td><td><span class="status ${statusClass(o.status)}">${o.status}</span></td><td><div class="progress"><span style="width:${o.progress}%"></span></div></td></tr>`).join("")}</tbody></table></div></div>
-      <div class="panel"><div class="panel-head"><h3>Was braucht Aufmerksamkeit?</h3><span>Live</span></div><div class="panel-body attention-list">
-        <div class="attention-item"><div class="attention-icon">!</div><div><strong>${urgent} dringende Tickets</strong><small>Supportfälle mit hoher Priorität prüfen.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis nach Aufwand festlegen.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">✓</div><div><strong>${state.clothing.filter(c=>c.status==="Kundenvorschau").length} Vorschau wartet</strong><small>Kundenfreigabe steht noch aus.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</strong><small>Bezahlstatus der Aufträge prüfen.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">!</div><div><strong>${state.orders.filter(o=>o.priority==="Dringend").length} dringende Aufträge</strong><small>Aufträge mit hoher Priorität zuerst bearbeiten.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">□</div><div><strong>${state.tickets.filter(t=>t.status==="Warten auf Kunde").length} Tickets warten auf Kunden</strong><small>Offene Rückfragen im Blick behalten.</small></div></div>
-        <div class="attention-item"><div class="attention-icon">👤</div><div><strong>${state.employees.filter(e=>e.status==="Aktiv").length} aktive Mitarbeiter</strong><small>Aufträge und Tickets gleichmäßig verteilen.</small></div></div>
-      </div></div>
+    <div class="admin-dashboard-v2">
+      <section class="admin-welcome-v2">
+        <div class="admin-welcome-copy">
+          <span class="admin-small-label">HEUTE IM ÜBERBLICK</span>
+          <h2>Willkommen zurück, Konsti.</h2>
+          <p>Hier siehst du sofort, was erledigt werden muss und wie deine aktuellen Aufträge stehen.</p>
+        </div>
+
+        <div class="admin-welcome-actions">
+          <button class="admin-action-card primary" onclick="openOrderModal()">
+            <span class="admin-action-icon">＋</span>
+            <span><strong>Neuer Auftrag</strong><small>Auftrag manuell anlegen</small></span>
+          </button>
+          <button class="admin-action-card" onclick="render('tickets')">
+            <span class="admin-action-icon">□</span>
+            <span><strong>Tickets öffnen</strong><small>${openTickets} aktuell offen</small></span>
+          </button>
+          <button class="admin-action-card" onclick="window.location.href='/'">
+            <span class="admin-action-icon">↗</span>
+            <span><strong>Homepage</strong><small>Öffentliche Seite ansehen</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="admin-stat-row-v2">
+        <article>
+          <div class="admin-stat-top"><span>Offene Aufträge</span><b>▣</b></div>
+          <strong>${openOrders.length}</strong>
+          <small>${completedOrders} bereits abgeschlossen</small>
+        </article>
+        <article>
+          <div class="admin-stat-top"><span>Aktive Kunden</span><b>◎</b></div>
+          <strong>${activeCustomers}</strong>
+          <small>${state.customers.length} Kunden insgesamt</small>
+        </article>
+        <article class="${urgent ? "warning" : ""}">
+          <div class="admin-stat-top"><span>Dringende Tickets</span><b>!</b></div>
+          <strong>${urgent}</strong>
+          <small>${openTickets} Tickets insgesamt offen</small>
+        </article>
+        <article class="${openPayments ? "payment" : ""}">
+          <div class="admin-stat-top"><span>Offene Zahlungen</span><b>€</b></div>
+          <strong>${openPayments}</strong>
+          <small>Zahlungsstatus prüfen</small>
+        </article>
+      </section>
+
+      <section class="admin-main-grid-v2">
+        <div class="admin-main-column-v2">
+          <article class="admin-panel-v2">
+            <div class="admin-panel-head-v2">
+              <div>
+                <span class="admin-small-label">AUFTRÄGE</span>
+                <h3>Aktuelle Aufträge</h3>
+              </div>
+              <button onclick="render('orders')">Alle ansehen →</button>
+            </div>
+
+            <div class="admin-order-list-v2">
+              ${openOrders.length ? openOrders.slice(0,6).map(o=>`
+                <button class="admin-order-row-v2" onclick="openOrderDetail('${o.id}')">
+                  <div class="admin-order-id-v2"><strong>${o.id}</strong><small>${o.type||"Custom Clothing"}</small></div>
+                  <div class="admin-order-client-v2"><strong>${o.client}</strong><small>${o.organization||"Privat"}</small></div>
+                  <div class="admin-order-status-v2"><span class="status ${statusClass(o.status)}">${o.status}</span></div>
+                  <div class="admin-order-progress-v2">
+                    <div><span>Fortschritt</span><b>${o.progress||0}%</b></div>
+                    <div class="progress"><span style="width:${o.progress||0}%"></span></div>
+                  </div>
+                  <div class="admin-order-price-v2"><strong>${o.finalPrice?eur(o.finalPrice):`${eur(o.priceMin)}–${eur(o.priceMax)}`}</strong><small>${o.paymentStatus||"Nicht berechnet"}</small></div>
+                  <span class="admin-row-arrow-v2">→</span>
+                </button>`).join("") : `
+                <div class="admin-empty-v2">
+                  <span>✓</span><strong>Keine offenen Aufträge</strong><small>Aktuell ist alles erledigt.</small>
+                </div>`}
+            </div>
+          </article>
+
+          <article class="admin-panel-v2 admin-performance-v2">
+            <div class="admin-panel-head-v2">
+              <div>
+                <span class="admin-small-label">STATUS</span>
+                <h3>Arbeitsstand</h3>
+              </div>
+            </div>
+
+            <div class="admin-performance-grid-v2">
+              <div><span>Vorschau wartet</span><strong>${previewWaiting}</strong><small>auf Kundenfreigabe</small></div>
+              <div><span>Aktive Mitarbeiter</span><strong>${activeEmployees}</strong><small>im System verfügbar</small></div>
+              <div><span>Designs</span><strong>${state.clothing.length}</strong><small>im Clothing-Bereich</small></div>
+              <div><span>Showcase</span><strong>${state.showcase.length}</strong><small>öffentliche Einträge</small></div>
+            </div>
+          </article>
+        </div>
+
+        <aside class="admin-side-column-v2">
+          <article class="admin-panel-v2">
+            <div class="admin-panel-head-v2 compact">
+              <div>
+                <span class="admin-small-label">PRIORITÄT</span>
+                <h3>Jetzt erledigen</h3>
+              </div>
+            </div>
+
+            <div class="admin-task-list-v2">
+              <button onclick="render('tickets')">
+                <span class="admin-task-icon-v2 danger">!</span>
+                <span><strong>${urgent} dringende Tickets</strong><small>Supportfälle zuerst prüfen</small></span>
+                <b>→</b>
+              </button>
+              <button onclick="render('orders')">
+                <span class="admin-task-icon-v2 money">€</span>
+                <span><strong>${state.orders.filter(o=>!o.finalPrice).length} Preisangebote offen</strong><small>Endpreis festlegen</small></span>
+                <b>→</b>
+              </button>
+              <button onclick="render('orders')">
+                <span class="admin-task-icon-v2 pay">€</span>
+                <span><strong>${openPayments} Zahlungen offen</strong><small>Zahlungsstatus kontrollieren</small></span>
+                <b>→</b>
+              </button>
+              <button onclick="render('tickets')">
+                <span class="admin-task-icon-v2 wait">□</span>
+                <span><strong>${state.tickets.filter(t=>t.status==="Warten auf Kunde").length} warten auf Kunden</strong><small>Rückmeldungen im Blick behalten</small></span>
+                <b>→</b>
+              </button>
+            </div>
+          </article>
+
+          <article class="admin-panel-v2 admin-quick-links-v2">
+            <div class="admin-panel-head-v2 compact">
+              <div>
+                <span class="admin-small-label">SCHNELLZUGRIFF</span>
+                <h3>Direkt öffnen</h3>
+              </div>
+            </div>
+
+            <div class="admin-quick-grid-v2">
+              <button onclick="render('customers')"><span>◎</span><strong>Kunden</strong></button>
+              <button onclick="render('pricing')"><span>€</span><strong>Preise</strong></button>
+              <button onclick="render('employees')"><span>♙</span><strong>Mitarbeiter</strong></button>
+              <button onclick="render('showcase')"><span>◇</span><strong>Showcase</strong></button>
+            </div>
+          </article>
+        </aside>
+      </section>
     </div>`;
 }
+
 
 function genericTable(view){
   const configs={

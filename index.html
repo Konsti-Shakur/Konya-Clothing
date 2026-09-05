@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Konya Clothing V3.21 — Admin</title>
+  <title>Konya Clothing V3.22 — Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,57 +11,94 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <img src="assets/konya-logo.png" alt="Konya Clothing Logo" class="brand-logo" />
+    <aside class="sidebar admin-sidebar-v2">
+      <div class="admin-brand-v2">
+        <div class="admin-brand-mark">
+          <img src="assets/konya-logo.png" alt="Konya Clothing Logo" />
+        </div>
         <div>
-          <div class="brand-title">KONYA</div>
-          <div class="brand-subtitle">CLOTHING</div>
+          <strong>KONYA</strong>
+          <span>CONTROL CENTER</span>
         </div>
       </div>
 
-      <nav class="nav">
-        <button class="nav-item active" data-view="dashboard">◫ <span>Übersicht</span></button>
-        <button class="nav-item" data-view="clothing">◈ <span>Clothing</span></button>
-        <button class="nav-item" data-view="orders">▣ <span>Aufträge</span><span class="count-badge" id="ordersBadge">3</span></button>
-        <button class="nav-item" data-view="categories">▦ <span>Kategorien</span></button>
-        <button class="nav-item" data-view="customers">◉ <span>Kunden</span></button>
-        <button class="nav-item" data-view="showcase">◇ <span>Showcase</span></button>
-        <button class="nav-item" data-view="pricing">€ <span>Preise & Leistungen</span></button>
-        <button class="nav-item" data-view="tickets">□ <span>Tickets</span><span class="count-badge danger" id="ticketsBadge">1</span></button>
-        <button class="nav-item" data-view="employees">♙ <span>Mitarbeiter</span></button>
-        <button class="nav-item" data-view="logs">⌁ <span>Protokoll</span></button>
-        <button class="nav-item" data-view="notifications">◉ <span>Benachrichtigungen</span></button>
+      <nav class="nav admin-nav-v2">
+        <div class="admin-nav-group">
+          <div class="admin-nav-label">START</div>
+          <button class="nav-item active" data-view="dashboard"><span class="nav-ico">⌂</span><span>Dashboard</span></button>
+        </div>
+
+        <div class="admin-nav-group">
+          <div class="admin-nav-label">AUFTRÄGE</div>
+          <button class="nav-item" data-view="orders"><span class="nav-ico">▣</span><span>Aufträge</span><span class="count-badge" id="ordersBadge">3</span></button>
+          <button class="nav-item" data-view="tickets"><span class="nav-ico">□</span><span>Tickets</span><span class="count-badge danger" id="ticketsBadge">1</span></button>
+          <button class="nav-item" data-view="customers"><span class="nav-ico">◎</span><span>Kunden</span></button>
+        </div>
+
+        <div class="admin-nav-group">
+          <div class="admin-nav-label">CONTENT</div>
+          <button class="nav-item" data-view="clothing"><span class="nav-ico">◈</span><span>Clothing</span></button>
+          <button class="nav-item" data-view="showcase"><span class="nav-ico">◇</span><span>Showcase</span></button>
+          <button class="nav-item" data-view="categories"><span class="nav-ico">▦</span><span>Kategorien</span></button>
+          <button class="nav-item" data-view="pricing"><span class="nav-ico">€</span><span>Preise & Leistungen</span></button>
+        </div>
+
+        <div class="admin-nav-group">
+          <div class="admin-nav-label">VERWALTUNG</div>
+          <button class="nav-item" data-view="employees"><span class="nav-ico">♙</span><span>Mitarbeiter</span></button>
+          <button class="nav-item" data-view="notifications"><span class="nav-ico">◉</span><span>Benachrichtigungen</span></button>
+          <button class="nav-item" data-view="logs"><span class="nav-ico">⌁</span><span>Protokoll</span></button>
+        </div>
       </nav>
 
-      <div class="sidebar-bottom">
-        <button class="sidebar-link" data-view="public">↗ <span>Öffentliche Seite</span></button>
-        <button class="sidebar-link" data-view="customer">◎ <span>Kundenbereich</span></button>
-        <button class="sidebar-link" id="backupBtn">⛁ <span>Datensicherung</span></button>
-        <div class="user-box">
+      <div class="sidebar-bottom admin-sidebar-bottom-v2">
+        <div class="admin-external-links">
+          <button class="sidebar-link" data-view="public">↗ <span>Homepage öffnen</span></button>
+          <button class="sidebar-link" data-view="customer">◎ <span>Kundenbereich</span></button>
+          <button class="sidebar-link" id="backupBtn">⛁ <span>Datensicherung</span></button>
+        </div>
+
+        <div class="user-box admin-user-v2">
           <div class="avatar">KS</div>
-          <div>
+          <div class="admin-user-copy">
             <strong>Konsti Shakur</strong>
-            <small>Inhaber / Admin</small><span class="build-version">V3.21</span><span class="backend-status" id="backendStatus">Datenbank wird verbunden …</span>
+            <small>Inhaber / Admin</small>
+            <div class="admin-user-meta">
+              <span class="build-version">V3.22</span>
+              <span class="backend-status" id="backendStatus">Datenbank wird verbunden …</span>
+            </div>
           </div>
         </div>
       </div>
     </aside>
 
     <main class="main">
-      <header class="topbar">
-        <div>
-          <div class="eyebrow">ADMINBEREICH</div>
-          <h1 id="pageTitle">Übersicht</h1>
-          <p id="pageSubtitle">Alles Wichtige zu Konya Clothing auf einen Blick.</p>
-        </div>
-        <div class="top-actions">
-          <div class="global-search">
-            <span>⌕</span>
-            <input id="globalSearch" placeholder="Suche nach Auftrag, Kunde, Organisation ..." />
+      <header class="topbar admin-topbar-v2">
+        <div class="admin-topbar-left">
+          <div class="eyebrow">KONYA CONTROL CENTER</div>
+          <div class="admin-title-row">
+            <div>
+              <h1 id="pageTitle">Dashboard</h1>
+              <p id="pageSubtitle">Alle wichtigen Bereiche zentral im Blick.</p>
+            </div>
           </div>
-          <button class="icon-btn" id="notifyBtn">♢<span class="dot" id="notifyDot"></span></button>
-          <button class="primary-btn" id="quickAdd">+ Neu</button>
+        </div>
+
+        <div class="top-actions admin-top-actions-v2">
+          <div class="global-search admin-search-v2">
+            <span>⌕</span>
+            <input id="globalSearch" placeholder="Auftrag, Kunde oder Organisation suchen ..." />
+          </div>
+
+          <button class="admin-notify-v2" id="notifyBtn" title="Benachrichtigungen">
+            <span>◉</span>
+            <span class="dot" id="notifyDot"></span>
+          </button>
+
+          <button class="primary-btn admin-new-v2" id="quickAdd">
+            <span>＋</span>
+            <span>Neuer Auftrag</span>
+          </button>
         </div>
       </header>
 

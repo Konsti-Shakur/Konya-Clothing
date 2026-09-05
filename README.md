@@ -1,13 +1,22 @@
-# Konya Clothing V3.21 – Premium Header
+# Konya Clothing V3.22 – Admin Redesign
 
-Die rechte Seite des öffentlichen Homepage-Headers wurde passend zum gewünschten Mockup neu gestaltet.
+Der Adminbereich wurde komplett neu aufgebaut und anders angeordnet.
 
-## 5 Änderungen
+## 5 große Änderungen
 
-1. Neuer gläserner Admin-Button mit Icon
-2. Größerer türkisfarbener „Auftrag anfragen“-Button mit Dokument-Icon und Pfeil
-3. Konya-Logo als runder Profil-/Kundenbereich-Button
-4. Dezente Trenner und türkiser Glow im Header
-5. Responsive Verhalten für kleinere Bildschirme
+1. **Neue Navigation mit Gruppen**
+   Dashboard, Aufträge, Content und Verwaltung sind jetzt klar getrennt.
 
-Die restliche Homepage, der Adminbereich, der Kundenbereich und das Backend bleiben unverändert.
+2. **Neuer Dashboard-Kopf**
+   Begrüßung, Schnellaktionen und direkte Navigation zu Auftrag, Tickets und Homepage.
+
+3. **Neue Statistik-Reihe**
+   Offene Aufträge, Kunden, dringende Tickets und Zahlungen sind sofort sichtbar.
+
+4. **Neue Auftragsübersicht**
+   Aktuelle Aufträge werden als kompakte Zeilen mit Kunde, Status, Fortschritt und Preis angezeigt.
+
+5. **Neue rechte Seitenleiste im Dashboard**
+   Prioritäten und Schnellzugriffe sind getrennt von den Hauptdaten.
+
+Alle bisherigen Funktionen, öffentliche Homepage, Kundenbereich und PostgreSQL bleiben erhalten.
