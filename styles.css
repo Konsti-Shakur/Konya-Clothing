@@ -503,3 +503,14 @@ tbody tr:hover{background:rgba(39,216,211,.045)}
   .kpi-grid{grid-template-columns:1fr 1fr!important}
   .top-actions .primary-btn{flex:1}
 }
+
+.backend-status{
+  display:block;
+  margin-top:4px;
+  font-size:9px;
+  line-height:1.25;
+  color:var(--muted);
+}
+.backend-status[data-mode="online"]{color:#58d6a9}
+.backend-status[data-mode="syncing"]{color:#f0c76b}
+.backend-status[data-mode="offline"]{color:#ff7c86}

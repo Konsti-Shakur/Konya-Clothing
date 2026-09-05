@@ -147,9 +147,47 @@ function syncCustomerMetrics(){
   });
 }
 
+let backendReady=false;
+let backendSaveTimer=null;
+let backendSaving=false;
+
+function setBackendStatus(mode,text){
+  const el=document.getElementById("backendStatus");
+  if(!el) return;
+  el.textContent=text;
+  el.dataset.mode=mode;
+}
+
+async function pushStateToBackend(){
+  if(!backendReady || backendSaving) return;
+  backendSaving=true;
+  setBackendStatus("syncing","Datenbank synchronisiert …");
+  try{
+    const res=await fetch("/api/state",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({state})
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    setBackendStatus("online","Datenbank verbunden");
+  }catch(err){
+    console.error("Backend save failed:",err);
+    setBackendStatus("offline","Datenbank offline · Browser-Backup aktiv");
+  }finally{
+    backendSaving=false;
+  }
+}
+
+function scheduleBackendSave(){
+  if(!backendReady) return;
+  clearTimeout(backendSaveTimer);
+  backendSaveTimer=setTimeout(pushStateToBackend,350);
+}
+
 const save = () => {
   syncCustomerMetrics();
   localStorage.setItem("konyaAdminStateV3", JSON.stringify(state));
+  scheduleBackendSave();
 };
 
 async function filesToAttachments(fileList){
@@ -919,5 +957,84 @@ document.addEventListener("click",e=>{
     notify.classList.add("hidden");
   }
 });
+function normalizeRemoteState(){
+  if(!state || typeof state!=="object") state=seed;
+  if(!state.pricing) state.pricing=defaultPricing;
+  if(!state.notificationSettings) state.notificationSettings={
+    newOrder:true,urgentTicket:true,previewApproved:true,changeRequested:true,paymentReceived:true
+  };
+  state.orders=Array.isArray(state.orders)?state.orders:[];
+  state.customers=Array.isArray(state.customers)?state.customers:[];
+  state.tickets=Array.isArray(state.tickets)?state.tickets:[];
+  state.employees=Array.isArray(state.employees)?state.employees:[];
+  state.clothing=Array.isArray(state.clothing)?state.clothing:[];
+  state.categories=Array.isArray(state.categories)?state.categories:[];
+  state.showcase=Array.isArray(state.showcase)?state.showcase:[];
+  state.logs=Array.isArray(state.logs)?state.logs:[];
+  state.notifications=Array.isArray(state.notifications)?state.notifications:[];
+
+  state.orders.forEach(o=>{
+    if(!o.paymentStatus) o.paymentStatus=o.finalPrice?"Zahlung offen":"Nicht berechnet";
+    if(o.paidAt===undefined) o.paidAt="";
+    if(o.invoiceNote===undefined) o.invoiceNote="";
+    if(!o.customerCode) o.customerCode=o.id;
+    if(!Array.isArray(o.history)) o.history=[{label:"Auftrag übernommen",date:new Date().toLocaleDateString("de-DE")}];
+    if(o.internalNote===undefined) o.internalNote="";
+    if(o.priority===undefined) o.priority="Normal";
+    if(o.progress===undefined) o.progress=0;
+  });
+
+  state.tickets.forEach(t=>{
+    if(t.orderId===undefined) t.orderId="";
+    if(t.internalNote===undefined) t.internalNote="";
+    if(!Array.isArray(t.messages)) t.messages=[];
+    if(!t.createdAt) t.createdAt=new Date().toLocaleDateString("de-DE");
+  });
+
+  state.employees.forEach((e,i)=>{
+    if(e.status===undefined) e.status=e.active===false?"Inaktiv":"Aktiv";
+    if(!Array.isArray(e.permissions)){
+      e.permissions=e.role==="Inhaber / Admin"
+        ? ["Aufträge","Kunden","Tickets","Showcase","Preise","Mitarbeiter","Logs"]
+        : ["Aufträge","Kunden","Tickets","Showcase"];
+    }
+    delete e.active;
+    if(e.note===undefined) e.note="";
+    if(e.joinedAt===undefined) e.joinedAt=i===0?"01.09.2026":new Date().toLocaleDateString("de-DE");
+  });
+  syncCustomerMetrics();
+}
+
+async function loadBackendState(){
+  setBackendStatus("syncing","Datenbank wird verbunden …");
+  try{
+    const res=await fetch("/api/state",{headers:{"Accept":"application/json"}});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload=await res.json();
+
+    if(payload && payload.state){
+      state=payload.state;
+      normalizeRemoteState();
+      localStorage.setItem("konyaAdminStateV3",JSON.stringify(state));
+      backendReady=true;
+      render("dashboard");
+      setBackendStatus("online","Datenbank verbunden");
+      showToast("Zentrale Datenbank geladen.");
+    }else{
+      backendReady=true;
+      normalizeRemoteState();
+      await pushStateToBackend();
+      render("dashboard");
+      showToast("Datenbank wurde mit deinem aktuellen Stand eingerichtet.");
+    }
+  }catch(err){
+    console.error("Backend load failed:",err);
+    backendReady=false;
+    setBackendStatus("offline","Datenbank offline · Browser-Backup aktiv");
+    showToast("Backend nicht erreichbar – Browser-Backup wird verwendet.");
+  }
+}
+
 syncCustomerMetrics();
 render("dashboard");
+loadBackendState();
