@@ -107,6 +107,16 @@ state.tickets.forEach(t=>{
   if(!t.messages) t.messages=[];
   if(!t.createdAt) t.createdAt="05.09.2026";
 });
+state.employees.forEach((e,i)=>{
+  if(e.status===undefined) e.status="Aktiv";
+  if(e.permissions===undefined){
+    e.permissions=e.role==="Inhaber / Admin"
+      ? ["Aufträge","Kunden","Tickets","Showcase","Preise","Mitarbeiter","Logs"]
+      : ["Aufträge","Kunden","Tickets","Showcase"];
+  }
+  if(e.note===undefined) e.note="";
+  if(e.joinedAt===undefined) e.joinedAt=i===0?"01.09.2026":"03.09.2026";
+});
 // V3.4.1 migration: repair the known demo hoodie order if an older localStorage version stored 5 €.
 const demoHoodie=state.orders.find(o=>o.id==="KC-2026-0042" && o.type==="Hoodie / Pullover");
 if(demoHoodie){
@@ -224,6 +234,7 @@ function dashboard(){
         <div class="attention-item"><div class="attention-icon">€</div><div><strong>${state.orders.filter(o=>o.paymentStatus==="Zahlung offen").length} Zahlungen offen</strong><small>Bezahlstatus der Aufträge prüfen.</small></div></div>
         <div class="attention-item"><div class="attention-icon">!</div><div><strong>${state.orders.filter(o=>o.priority==="Dringend").length} dringende Aufträge</strong><small>Aufträge mit hoher Priorität zuerst bearbeiten.</small></div></div>
         <div class="attention-item"><div class="attention-icon">□</div><div><strong>${state.tickets.filter(t=>t.status==="Warten auf Kunde").length} Tickets warten auf Kunden</strong><small>Offene Rückfragen im Blick behalten.</small></div></div>
+        <div class="attention-item"><div class="attention-icon">👤</div><div><strong>${state.employees.filter(e=>e.status==="Aktiv").length} aktive Mitarbeiter</strong><small>Aufträge und Tickets gleichmäßig verteilen.</small></div></div>
       </div></div>
     </div>`;
 }
@@ -751,7 +762,95 @@ window.addTicketMessage=function(id){
   save();openTicketDetail(id);showToast("Nachricht gespeichert.");
 }
 
-window.openEmployeeModal=function(){modal(formTemplate("Mitarbeiter hinzufügen","Rolle und Rechte zuweisen.",`<div class="form-group"><label>Name</label><input name="name" required></div><div class="form-group"><label>Rolle</label><select name="role"><option>Admin</option><option>Designer</option><option>Support</option><option>Buchhaltung</option></select></div><div class="form-group full"><label>Berechtigungen</label><input name="permissions" value="Clothing, Aufträge"></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.employees.push({...f,active:true});save();closeModal();render("employees");showToast("Mitarbeiter hinzugefügt.")}}
+window.openEmployeeModal=function(){
+  modal(formTemplate("Mitarbeiter hinzufügen","Teammitglied mit Rolle und Grundrechten anlegen.",`
+    <div class="form-group"><label>Name</label><input name="name" required></div>
+    <div class="form-group"><label>Rolle</label><select name="role"><option>Designer</option><option>Support</option><option>Auftragsmanagement</option><option>Admin</option></select></div>
+    <div class="form-group"><label>Status</label><select name="status"><option>Aktiv</option><option>Inaktiv</option></select></div>
+    <div class="form-group full"><label>Notiz</label><textarea name="note" placeholder="Optional"></textarea></div>`));
+  document.getElementById("modalForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=Object.fromEntries(new FormData(e.target));
+    state.employees.push({
+      name:f.name,role:f.role,status:f.status,note:f.note||"",
+      joinedAt:new Date().toLocaleDateString("de-DE"),
+      permissions:["Aufträge","Kunden","Tickets","Showcase"]
+    });
+    state.logs.unshift(`Mitarbeiter ${f.name} hinzugefügt`);
+    save();closeModal();render("employees");showToast("Mitarbeiter hinzugefügt.");
+  };
+}
+
+window.openEmployeeDetail=function(name){
+  const e=state.employees.find(x=>x.name===name); if(!e) return;
+  const activeOrders=state.orders.filter(o=>o.designer===e.name && !["Fertig","Ausgeliefert","Storniert"].includes(o.status));
+  const activeTickets=state.tickets.filter(t=>t.assigned===e.name && !["Gelöst","Geschlossen"].includes(t.status));
+  const allPerms=["Aufträge","Kunden","Tickets","Showcase","Preise","Mitarbeiter","Logs"];
+  modal(`<h2>${e.name}</h2><p>${e.role} · seit ${e.joinedAt}</p>
+    <div class="order-detail-grid">
+      <div class="detail-card">
+        <h3 style="margin-top:0">Mitarbeiter verwalten</h3>
+        <label class="inline-note">Rolle</label>
+        <select class="field" id="employeeRoleInput" style="width:100%;margin:6px 0 10px">
+          ${["Inhaber / Admin","Admin","Designer","Support","Auftragsmanagement"].map(r=>`<option ${r===e.role?"selected":""}>${r}</option>`).join("")}
+        </select>
+
+        <label class="inline-note">Status</label>
+        <select class="field" id="employeeStatusInput" style="width:100%;margin:6px 0 10px">
+          ${["Aktiv","Inaktiv"].map(s=>`<option ${s===e.status?"selected":""}>${s}</option>`).join("")}
+        </select>
+
+        <label class="inline-note">Interne Notiz</label>
+        <textarea id="employeeNoteInput">${e.note||""}</textarea>
+
+        <div class="permission-box">
+          <strong>Rechte</strong>
+          <div class="permission-grid">
+            ${allPerms.map(p=>`<label><input type="checkbox" class="employeePerm" value="${p}" ${(e.permissions||[]).includes(p)?"checked":""}> ${p}</label>`).join("")}
+          </div>
+        </div>
+
+        <button class="primary-btn" style="margin-top:12px;width:100%" onclick="saveEmployeeDetail('${e.name.replace(/'/g,"\\'")}')">Mitarbeiter speichern</button>
+      </div>
+
+      <div class="detail-card">
+        <h3 style="margin-top:0">Auslastung</h3>
+        <div class="employee-stats">
+          <div><span>Offene Aufträge</span><b>${activeOrders.length}</b></div>
+          <div><span>Offene Tickets</span><b>${activeTickets.length}</b></div>
+          <div><span>Rechte</span><b>${(e.permissions||[]).length}</b></div>
+        </div>
+
+        <h4 style="margin:18px 0 8px">Aktuelle Aufträge</h4>
+        <div class="mini-list">
+          ${activeOrders.length?activeOrders.map(o=>`<button onclick="closeModal();openOrderDetail('${o.id}')"><span>${o.id}</span><b>${o.type}</b><small>${o.status}</small></button>`).join(""):`<div class="empty">Keine offenen Aufträge.</div>`}
+        </div>
+
+        <h4 style="margin:18px 0 8px">Aktuelle Tickets</h4>
+        <div class="mini-list">
+          ${activeTickets.length?activeTickets.map(t=>`<button onclick="closeModal();openTicketDetail('${t.id}')"><span>${t.id}</span><b>${t.title}</b><small>${t.status}</small></button>`).join(""):`<div class="empty">Keine offenen Tickets.</div>`}
+        </div>
+      </div>
+    </div>`);
+}
+
+window.saveEmployeeDetail=function(name){
+  const e=state.employees.find(x=>x.name===name); if(!e) return;
+  const oldRole=e.role, oldStatus=e.status;
+  e.role=document.getElementById("employeeRoleInput").value;
+  e.status=document.getElementById("employeeStatusInput").value;
+  e.note=document.getElementById("employeeNoteInput").value.trim();
+  e.permissions=[...document.querySelectorAll(".employeePerm:checked")].map(x=>x.value);
+
+  const changes=[];
+  if(oldRole!==e.role) changes.push(`Rolle: ${e.role}`);
+  if(oldStatus!==e.status) changes.push(`Status: ${e.status}`);
+  changes.push(`${e.permissions.length} Rechte`);
+  state.logs.unshift(`${name}: ${changes.join(" · ")}`);
+  save();closeModal();render("employees");showToast("Mitarbeiter aktualisiert.");
+}
+
+
 window.openCategoryModal=function(){modal(formTemplate("Kategorie hinzufügen","Neue Clothing-Kategorie anlegen.",`<div class="form-group full"><label>Name</label><input name="name" required></div>`));document.getElementById("modalForm").onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));state.categories.push(f.name);save();closeModal();render("categories");showToast("Kategorie hinzugefügt.")}}
 window.deleteCategory=function(i){if(confirm("Kategorie wirklich löschen?")){state.categories.splice(i,1);save();render("categories")}}
 

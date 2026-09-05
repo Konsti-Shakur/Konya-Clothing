@@ -422,3 +422,17 @@ linear-gradient(135deg,#0b1113,#050708 70%);padding:56px 42px;display:grid;grid-
 .ticket-message b{font-size:11px;color:var(--accent)}
 .ticket-message p{font-size:12px;line-height:1.5;margin:6px 0;color:#d7e0e2}
 .ticket-message span{font-size:10px;color:var(--muted)}
+
+.permission-box{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0a1113}
+.permission-box strong{display:block;margin-bottom:9px}
+.permission-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.permission-grid label{font-size:11px;color:#d9e1e3}
+.employee-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.employee-stats div{border:1px solid var(--line);border-radius:10px;padding:12px;background:#0a1113}
+.employee-stats span{display:block;color:var(--muted);font-size:10px}
+.employee-stats b{display:block;font-size:22px;margin-top:4px}
+.mini-list{display:grid;gap:7px}
+.mini-list button{display:grid;grid-template-columns:.7fr 1.5fr 1fr;gap:8px;align-items:center;width:100%;background:#0a1113;border:1px solid var(--line);color:white;border-radius:9px;padding:9px 10px;text-align:left;cursor:pointer}
+.mini-list span,.mini-list small{font-size:10px;color:var(--muted)}
+.mini-list b{font-size:11px}
+@media(max-width:750px){.permission-grid{grid-template-columns:1fr}.employee-stats{grid-template-columns:1fr}.mini-list button{grid-template-columns:1fr}}
