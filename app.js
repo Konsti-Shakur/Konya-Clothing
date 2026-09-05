@@ -505,58 +505,99 @@ function renderPublicPage(page){
   if(!container) return;
   setPublicActive(page);
 
+  const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+
   if(page==="showcase"){
+    const categories=[...new Set(state.showcase.map(x=>x.category).filter(Boolean))];
     container.innerHTML=`
-      <section class="page-hero compact">
-        <div class="eyebrow">SHOWCASE</div>
-        <h1>Ausgewählte Designs</h1>
-        <p>Ein Überblick über mögliche Styles, Kategorien und individuelle Clothing-Projekte.</p>
+      <section class="page-hero compact showcase-hero">
+        <div>
+          <span class="eyebrow">SHOWCASE</span>
+          <h1>Designs mit eigenem Charakter.</h1>
+          <p>Von cleanen Streetwear-Looks bis zu auffälligen Custom-Outfits. Hier bekommst du einen schnellen Überblick über Stilrichtungen und Möglichkeiten.</p>
+        </div>
+        <div class="page-hero-side">
+          <strong>${state.showcase.length}</strong>
+          <span>aktuelle Showcase-Einträge</span>
+        </div>
       </section>
+
       <section class="site-section">
-        <div class="public-showcase-grid full">
+        <div class="showcase-filterbar">
+          <button class="filter-chip active" onclick="filterShowcasePublic('all',this)">Alle</button>
+          ${categories.map(c=>`<button class="filter-chip" onclick="filterShowcasePublic('${escapeHtml(c).replace(/'/g,"\\'")}',this)">${escapeHtml(c)}</button>`).join("")}
+        </div>
+
+        <div class="public-showcase-grid full" id="publicShowcaseGrid">
           ${state.showcase.map((x,i)=>`
-            <article class="public-showcase-card">
+            <article class="public-showcase-card" data-category="${escapeHtml(x.category||"Custom")}">
               <div class="public-showcase-visual ${i%2===0?"alt":""}">
-                <div class="showcase-badge">${x.category||"Custom"}</div>
-                <span>${x.name||x.title||"Konya Clothing"}</span>
+                <div class="showcase-badge">${escapeHtml(x.category||"Custom")}</div>
+                <div class="showcase-number">${String(i+1).padStart(2,"0")}</div>
+                <span>${escapeHtml(x.name||x.title||"Konya Clothing")}</span>
               </div>
               <div class="public-showcase-body">
-                <h3>${x.name||x.title||"Design"}</h3>
-                <p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p>
+                <h3>${escapeHtml(x.name||x.title||"Design")}</h3>
+                <p>${escapeHtml(x.description||"Individuelles Clothing Design von Konya Clothing.")}</p>
+                <button class="text-link-btn" onclick="publicNavigate('order')">Ähnliches anfragen →</button>
               </div>
             </article>`).join("")}
         </div>
       </section>
+
       <section class="public-order-cta site-cta">
-        <div><span class="eyebrow">DEINE IDEE</span><h2>Du willst etwas Ähnliches?</h2><p>Schick uns Referenzen, Logo und deine Vorstellungen.</p></div>
-        <button class="primary-btn" onclick="publicNavigate('order')">Auftrag starten</button>
+        <div><span class="eyebrow">DEIN DESIGN</span><h2>Du hast schon eine Idee im Kopf?</h2><p>Schick uns Referenzen, Farben und dein Logo. Wir machen daraus einen klar planbaren Auftrag.</p></div>
+        <button class="primary-btn" onclick="publicNavigate('order')">Projekt anfragen</button>
       </section>`;
     return;
   }
 
   if(page==="prices"){
+    const popular=["Hoodie / Pullover","Individuelles Custom-Outfit","Fraktions-Outfit"];
     container.innerHTML=`
-      <section class="page-hero compact">
-        <div class="eyebrow">PREISE</div>
-        <h1>Transparente Richtpreise</h1>
-        <p>Der endgültige Preis hängt vom Aufwand ab und wird vor Beginn des Auftrags abgestimmt.</p>
+      <section class="page-hero compact price-hero">
+        <div>
+          <span class="eyebrow">PREISE</span>
+          <h1>Klare Richtpreise. Keine Überraschungen.</h1>
+          <p>Du siehst sofort, in welchem Rahmen sich dein Projekt bewegt. Der finale Preis wird vor der Bearbeitung mit dir abgestimmt.</p>
+        </div>
+        <div class="price-hero-card">
+          <span>Express möglich</span>
+          <strong>48h</strong>
+          <small>+35–40 € je nach Aufwand</small>
+        </div>
       </section>
+
       <section class="site-section price-page-grid">
         ${state.pricing.map(group=>`
           <article class="price-group-card">
-            <div class="price-group-head"><span>${group.title}</span></div>
+            <div class="price-group-head">
+              <span>${escapeHtml(group.title)}</span>
+              <small>${group.items.length} Leistungen</small>
+            </div>
             <div class="price-group-body">
               ${group.items.map(item=>`
-                <div class="price-line">
-                  <span>${item.name}</span>
+                <div class="price-line ${popular.includes(item.name)?"popular":""}">
+                  <div>
+                    <span>${escapeHtml(item.name)}</span>
+                    ${popular.includes(item.name)?'<small>Beliebt</small>':""}
+                  </div>
                   <strong>${item.min===item.max?`${item.min} €`:`${item.min}–${item.max} €`}</strong>
                 </div>`).join("")}
             </div>
           </article>`).join("")}
       </section>
+
+      <section class="price-explainer-grid">
+        <article><span>01</span><h3>Richtpreis</h3><p>Du siehst direkt den ungefähren Preisrahmen.</p></article>
+        <article><span>02</span><h3>Aufwand prüfen</h3><p>Wir bewerten Details, Referenzen und gewünschte Änderungen.</p></article>
+        <article><span>03</span><h3>Fixpreis</h3><p>Vor Beginn bekommst du deinen finalen Preis bestätigt.</p></article>
+      </section>
+
       <div class="public-price-note site-price-note">Alle Preise dienen als Richtwerte. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
+
       <section class="public-order-cta site-cta">
-        <div><span class="eyebrow">PREISANFRAGE</span><h2>Du willst einen genauen Preis?</h2><p>Beschreibe dein Projekt und wir geben dir ein konkretes Angebot.</p></div>
+        <div><span class="eyebrow">PREISANFRAGE</span><h2>Du möchtest einen genauen Preis?</h2><p>Beschreibe dein Projekt und wir geben dir eine konkrete Einschätzung.</p></div>
         <button class="primary-btn" onclick="publicNavigate('order')">Preis anfragen</button>
       </section>`;
     return;
@@ -564,19 +605,32 @@ function renderPublicPage(page){
 
   if(page==="order"){
     container.innerHTML=`
-      <section class="page-hero compact">
-        <div class="eyebrow">AUFTRAG</div>
-        <h1>Deinen Auftrag starten</h1>
-        <p>Je genauer deine Angaben sind, desto schneller können wir deinen Auftrag einschätzen und bearbeiten.</p>
+      <section class="page-hero compact order-hero">
+        <div>
+          <span class="eyebrow">AUFTRAG</span>
+          <h1>Von deiner Idee zum fertigen Clothing.</h1>
+          <p>Fülle die Anfrage so genau wie möglich aus. Damit können wir Aufwand, Preis und Umsetzung schneller einschätzen.</p>
+        </div>
+        <div class="order-hero-note">
+          <span>Was hilft uns?</span>
+          <strong>Referenzen · Farben · Logo · Stil · Termin</strong>
+        </div>
       </section>
+
       <section class="site-section order-page-layout">
-        <article class="order-page-card">
-          <div class="panel-head"><h3>Auftragsanfrage</h3><span>Unverbindlich anfragen</span></div>
+        <article class="order-page-card premium-form-card">
+          <div class="panel-head">
+            <div><h3>Auftragsanfrage</h3><span>Unverbindlich und ohne Zahlungspflicht</span></div>
+            <div class="step-pill">1 Anfrage</div>
+          </div>
           <form id="publicInlineOrderForm" class="order-page-form">
+            <div class="form-section-title"><span>01</span><div><strong>Kontakt</strong><small>Wie können wir dich erreichen?</small></div></div>
             <div class="form-grid two">
               <div class="form-group"><label>Name *</label><input name="client" required placeholder="Dein Name"></div>
-              <div class="form-group"><label>Discord *</label><input name="discord" required placeholder="name oder ID"></div>
+              <div class="form-group"><label>Discord *</label><input name="discord" required placeholder="Name oder Discord-ID"></div>
             </div>
+
+            <div class="form-section-title"><span>02</span><div><strong>Projekt</strong><small>Was möchtest du erstellen lassen?</small></div></div>
             <div class="form-grid two">
               <div class="form-group"><label>Organisation / Unternehmen</label><input name="organization" placeholder="Optional"></div>
               <div class="form-group"><label>Kategorie *</label><select name="category" required>${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div>
@@ -589,20 +643,28 @@ function renderPublicPage(page){
               </div>
               <div class="form-group"><label>Wunschtermin</label><input name="deadline" type="date"></div>
             </div>
-            <div class="form-group"><label>Beschreibung *</label><textarea name="description" required rows="7" placeholder="Was genau möchtest du? Farben, Logos, Stil, Referenzen, gewünschte Änderungen ..."></textarea></div>
-            <div class="form-group"><label>Dateien / Referenzen</label><input name="files" type="file" accept="image/*,.zip,.rar,.pdf" multiple></div>
-            <div class="form-note">Maximal 6 Dateien mit jeweils 2 MB. Große Final-Dateien werden später über die dauerhafte Dateiablage geliefert.</div>
+
+            <div class="form-section-title"><span>03</span><div><strong>Details</strong><small>Je genauer, desto besser.</small></div></div>
+            <div class="form-group"><label>Beschreibung *</label><textarea name="description" required rows="7" placeholder="Farben, Stil, Logos, gewünschte Änderungen, Vorlagen, besondere Wünsche ..."></textarea></div>
+            <div class="form-group upload-drop"><label>Dateien / Referenzen</label><input name="files" type="file" accept="image/*,.zip,.rar,.pdf" multiple><small>Bilder, Logos, ZIP/RAR oder PDF · max. 6 Dateien à 2 MB</small></div>
             <button class="primary-btn large" type="submit">Auftrag unverbindlich anfragen</button>
           </form>
         </article>
-        <aside class="order-info-card">
-          <span class="eyebrow">SO GEHT ES WEITER</span>
-          <h3>Nach deiner Anfrage</h3>
-          <div class="mini-step"><b>01</b><span>Wir prüfen deine Angaben und den Aufwand.</span></div>
-          <div class="mini-step"><b>02</b><span>Du erhältst einen Preis und die Auftragsdetails.</span></div>
-          <div class="mini-step"><b>03</b><span>Nach Annahme startet die Bearbeitung.</span></div>
-          <div class="mini-step"><b>04</b><span>Du erhältst eine Vorschau zur Freigabe.</span></div>
-          <div class="mini-step"><b>05</b><span>Nach Freigabe werden die finalen Dateien ausgeliefert.</span></div>
+
+        <aside class="order-info-stack">
+          <article class="order-info-card">
+            <span class="eyebrow">ABLAUF</span>
+            <h3>Nach deiner Anfrage</h3>
+            <div class="mini-step"><b>01</b><span>Wir prüfen deine Angaben und den Aufwand.</span></div>
+            <div class="mini-step"><b>02</b><span>Du erhältst Preis und Auftragsdetails.</span></div>
+            <div class="mini-step"><b>03</b><span>Nach Annahme startet die Bearbeitung.</span></div>
+            <div class="mini-step"><b>04</b><span>Du erhältst eine Vorschau zur Freigabe.</span></div>
+            <div class="mini-step"><b>05</b><span>Nach Freigabe folgt die Auslieferung.</span></div>
+          </article>
+          <article class="side-info-card">
+            <span>Wichtig</span>
+            <p>Der Auftrag startet erst, nachdem Preis und Umfang abgestimmt wurden.</p>
+          </article>
         </aside>
       </section>`;
     bindInlinePublicOrderForm();
@@ -610,70 +672,131 @@ function renderPublicPage(page){
   }
 
   const featured=state.showcase.slice(0,4);
+  const newestOrders=state.orders.slice(0,3);
+
   container.innerHTML=`
-    <section class="public-hero-v2 site-landing-hero">
-      <div class="public-hero-overlay"></div>
-      <div class="public-hero-content">
+    <section class="home-hero-v3">
+      <div class="home-hero-bg"></div>
+      <div class="home-hero-copy">
         <div class="public-brand-chip"><img src="/assets/konya-logo.png" alt="Konya Clothing Logo"><span>Konya Clothing</span></div>
-        <div class="eyebrow">CUSTOM FIVEM CLOTHING</div>
-        <h1>Clothing, das zu deinem <span>Projekt passt.</span></h1>
-        <p>Individuelle FiveM-Kleidung, saubere Texture Reworks und hochwertige Custom Designs – professionell geplant und übersichtlich abgewickelt.</p>
-        <div class="public-hero-actions">
-          <button class="primary-btn public-cta" onclick="publicNavigate('order')">Auftrag anfragen</button>
-          <button class="secondary-btn public-cta" onclick="publicNavigate('showcase')">Showcase ansehen</button>
+        <span class="eyebrow">CUSTOM FIVEM CLOTHING</span>
+        <h1>Dein Projekt.<br><em>Dein Style.</em></h1>
+        <p>Custom Clothing, Texture Reworks und individuelle Designs für FiveM – übersichtlich geplant, sauber umgesetzt und transparent abgewickelt.</p>
+        <div class="home-hero-actions">
+          <button class="primary-btn hero-main-btn" onclick="publicNavigate('order')">Auftrag starten</button>
+          <button class="secondary-btn hero-main-btn" onclick="publicNavigate('showcase')">Arbeiten ansehen</button>
         </div>
-        <div class="public-trust-row"><span>✓ Individuelle Designs</span><span>✓ Klare Preisabsprache</span><span>✓ Vorschau & Freigabe</span></div>
+        <div class="hero-proof">
+          <div><strong>${state.showcase.length}+</strong><span>Designs</span></div>
+          <div><strong>${state.customers.length}</strong><span>Kunden</span></div>
+          <div><strong>48h</strong><span>Express möglich</span></div>
+        </div>
+      </div>
+      <div class="home-hero-panel">
+        <span class="eyebrow">SCHNELLSTART</span>
+        <h3>Was möchtest du machen?</h3>
+        <button onclick="publicNavigate('order')"><span>01</span><div><strong>Neues Clothing</strong><small>Komplett neu gestalten</small></div><b>→</b></button>
+        <button onclick="publicNavigate('order')"><span>02</span><div><strong>Texture Rework</strong><small>Bestehende Textur verbessern</small></div><b>→</b></button>
+        <button onclick="publicNavigate('order')"><span>03</span><div><strong>Logo Integration</strong><small>Logo sauber platzieren</small></div><b>→</b></button>
       </div>
     </section>
 
-    <section class="public-quick-grid site-stats">
-      <div class="public-stat-card"><strong>${state.showcase.length}+</strong><span>Showcase Designs</span></div>
-      <div class="public-stat-card"><strong>${state.orders.length}</strong><span>Aufträge im System</span></div>
-      <div class="public-stat-card"><strong>${state.customers.length}</strong><span>Kunden</span></div>
-      <div class="public-stat-card"><strong>48h</strong><span>Express möglich</span></div>
+    <section class="home-trust-strip">
+      <div><span>✓</span><strong>Klare Preise</strong><small>vor Bearbeitungsstart</small></div>
+      <div><span>✓</span><strong>Vorschau</strong><small>vor finaler Freigabe</small></div>
+      <div><span>✓</span><strong>Änderungen</strong><small>sauber dokumentiert</small></div>
+      <div><span>✓</span><strong>Kundenbereich</strong><small>Status jederzeit einsehbar</small></div>
     </section>
 
-    <section class="site-section">
-      <div class="public-section-head"><span class="eyebrow">LEISTUNGEN</span><h2>Was wir für dich machen</h2><p>Von einzelnen Texturen bis zum kompletten Outfit.</p></div>
-      <div class="public-service-grid">
-        <article class="public-service-card"><div class="service-icon">✦</div><h3>Custom Clothing</h3><p>Individuelle Kleidung nach deinen Vorstellungen – von Einzelteilen bis zu kompletten Sets.</p></article>
-        <article class="public-service-card"><div class="service-icon">◇</div><h3>Texture Rework</h3><p>Bestehende Texturen werden sauber überarbeitet, geschärft und optisch verbessert.</p></article>
-        <article class="public-service-card"><div class="service-icon">⌁</div><h3>Logo Integration</h3><p>Logos und Designs werden passend und sauber auf Kleidung eingearbeitet.</p></article>
+    <section class="site-section home-intro-grid">
+      <div class="public-section-head">
+        <span class="eyebrow">LEISTUNGEN</span>
+        <h2>Alles rund um dein FiveM Clothing.</h2>
+        <p>Du brauchst nicht mehrere Ansprechpartner. Wir bündeln Design, Rework, Logos und komplette Outfit-Projekte an einem Ort.</p>
+        <button class="text-link-btn large-link" onclick="publicNavigate('prices')">Preise ansehen →</button>
+      </div>
+      <div class="service-stack">
+        <article><span>01</span><div><h3>Custom Clothing</h3><p>Individuelle Einzelteile und komplette Outfits nach deinem Stil.</p></div></article>
+        <article><span>02</span><div><h3>Texture Rework</h3><p>Unscharfe oder alte Texturen werden sauber neu aufgebaut.</p></div></article>
+        <article><span>03</span><div><h3>Logo & Branding</h3><p>Logos, Schriftzüge und Branding passend auf Kleidung integriert.</p></div></article>
       </div>
     </section>
 
-    <section class="site-section public-process-section">
-      <div class="public-section-head"><span class="eyebrow">ABLAUF</span><h2>In 6 Schritten zum fertigen Clothing</h2></div>
-      <div class="public-process-grid">
-        ${[["01","Anfrage","Wunsch und Referenzen senden."],["02","Preis","Aufwand und Preis abstimmen."],["03","Bearbeitung","Designer setzt den Auftrag um."],["04","Vorschau","Du bekommst eine Vorschau."],["05","Freigabe","Änderungen oder Freigabe."],["06","Auslieferung","Finale Dateien erhalten."]].map(x=>`<div class="public-process-card"><span>${x[0]}</span><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
+    <section class="site-section process-v3">
+      <div class="public-section-head public-section-head-row">
+        <div><span class="eyebrow">ABLAUF</span><h2>Ein klarer Prozess statt Chaos.</h2><p>Du weißt bei jedem Schritt, was gerade passiert.</p></div>
+        <button class="secondary-btn" onclick="publicNavigate('order')">Auftrag starten</button>
+      </div>
+      <div class="process-line">
+        ${[
+          ["01","Anfrage","Wünsche + Referenzen"],
+          ["02","Preis","Aufwand + Fixpreis"],
+          ["03","Design","Umsetzung durch Designer"],
+          ["04","Vorschau","Prüfen + Änderungswunsch"],
+          ["05","Freigabe","Final bestätigen"],
+          ["06","Auslieferung","Dateien erhalten"]
+        ].map((x,i)=>`
+          <div class="process-node">
+            <div class="node-top"><span>${x[0]}</span>${i<5?'<i></i>':""}</div>
+            <h3>${x[1]}</h3>
+            <p>${x[2]}</p>
+          </div>`).join("")}
       </div>
     </section>
 
     <section class="site-section">
       <div class="public-section-head public-section-head-row">
-        <div><span class="eyebrow">SHOWCASE</span><h2>Ausgewählte Arbeiten</h2><p>Ein kleiner Einblick in verschiedene Styles.</p></div>
-        <button class="secondary-btn" onclick="publicNavigate('showcase')">Alle ansehen</button>
+        <div><span class="eyebrow">SHOWCASE</span><h2>Aktuelle Arbeiten.</h2><p>Ein direkter Blick auf verschiedene Stilrichtungen.</p></div>
+        <button class="secondary-btn" onclick="publicNavigate('showcase')">Komplettes Showcase</button>
       </div>
-      <div class="public-showcase-grid">
-        ${featured.map((x,i)=>`<article class="public-showcase-card"><div class="public-showcase-visual ${i%2===0?"alt":""}"><div class="showcase-badge">${x.category||"Custom"}</div><span>${x.name||x.title||"Konya Clothing"}</span></div><div class="public-showcase-body"><h3>${x.name||x.title||"Design"}</h3><p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p></div></article>`).join("")}
+      <div class="showcase-feature-grid">
+        ${featured.map((x,i)=>`
+          <article class="showcase-feature-card ${i===0?"featured":""}">
+            <div class="showcase-feature-art ${i%2===0?"alt":""}">
+              <span class="showcase-badge">${escapeHtml(x.category||"Custom")}</span>
+              <div><small>Konya Clothing</small><strong>${escapeHtml(x.name||x.title||"Design")}</strong></div>
+            </div>
+            <div class="showcase-feature-copy">
+              <p>${escapeHtml(x.description||"Individuelles Clothing Design.")}</p>
+              <button class="text-link-btn" onclick="publicNavigate('order')">Ähnliches anfragen →</button>
+            </div>
+          </article>`).join("")}
       </div>
     </section>
 
-    <section class="site-section">
-      <div class="public-section-head public-section-head-row">
-        <div><span class="eyebrow">PREISE</span><h2>Die wichtigsten Richtpreise</h2><p>Transparent und schnell erfassbar.</p></div>
-        <button class="secondary-btn" onclick="publicNavigate('prices')">Komplette Preisliste</button>
+    <section class="site-section home-pricing-preview">
+      <div class="pricing-preview-copy">
+        <span class="eyebrow">PREISE</span>
+        <h2>Schnell wissen, womit du rechnen kannst.</h2>
+        <p>Unsere Richtpreise geben dir sofort eine Orientierung. Den finalen Preis bestätigen wir vor Beginn.</p>
+        <button class="secondary-btn" onclick="publicNavigate('prices')">Alle Preise</button>
       </div>
-      <div class="public-price-grid">
-        ${[["T-Shirt / Top","5–8 €"],["Hoodie / Pullover","8–12 €"],["Jacke / Mantel","12–18 €"],["Hose / Jeans","8–12 €"],["Custom-Outfit","40–70 €"],["Einsatzkleidung","45–80 €"]].map(x=>`<div class="public-price-card"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("")}
+      <div class="pricing-preview-list">
+        ${[["T-Shirt / Top","5–8 €"],["Hoodie / Pullover","8–12 €"],["Hose / Jeans","8–12 €"],["Custom-Outfit","40–70 €"],["Einsatzkleidung","45–80 €"]].map((x,i)=>`
+          <div><span>${String(i+1).padStart(2,"0")}</span><strong>${x[0]}</strong><b>${x[1]}</b></div>`).join("")}
       </div>
     </section>
 
-    <section class="public-order-cta site-cta">
-      <div><span class="eyebrow">DEIN PROJEKT</span><h2>Bereit für deinen Auftrag?</h2><p>Schick uns deine Idee und wir melden uns mit Preis und Ablauf.</p></div>
-      <button class="primary-btn" onclick="publicNavigate('order')">Jetzt Auftrag starten</button>
+    <section class="home-final-cta">
+      <div class="home-final-copy">
+        <span class="eyebrow">KONYA CLOTHING</span>
+        <h2>Aus deiner Idee wird ein fertiges Design.</h2>
+        <p>Starte deine Anfrage direkt online und behalte danach Status, Preis und Vorschau im Blick.</p>
+      </div>
+      <div class="home-final-actions">
+        <button class="primary-btn hero-main-btn" onclick="publicNavigate('order')">Auftrag anfragen</button>
+        <a class="secondary-btn hero-main-btn" href="/kundenbereich">Auftrag verfolgen</a>
+      </div>
     </section>`;
 }
+
+window.filterShowcasePublic=function(category,btn){
+  document.querySelectorAll(".filter-chip").forEach(x=>x.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  document.querySelectorAll("#publicShowcaseGrid .public-showcase-card").forEach(card=>{
+    card.style.display=category==="all" || card.dataset.category===category ? "" : "none";
+  });
+};
 
 function bindInlinePublicOrderForm(){
   const form=document.getElementById("publicInlineOrderForm");

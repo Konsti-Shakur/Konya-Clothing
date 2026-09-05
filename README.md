@@ -1,27 +1,22 @@
-# Konya Clothing V3.14 – Richtige öffentliche Homepage
+# Konya Clothing V3.15 – Public Experience Redesign
 
-Diese Version trennt die öffentliche Website klar vom internen Adminbereich.
+Diesmal wurde vor allem die Hauptseite deutlich stärker verändert.
 
-## Die 5 großen Schritte
+## Die 5 großen Änderungen
 
-1. **Öffentliche Homepage unter /**
-   Kunden sehen nur die normale Konya-Clothing-Website mit Header, Leistungen, Showcase, Preisen und Call-to-Action.
+1. **Neue Startseite mit stärkerem Hero**
+   Großes Branding, klare Handlungsbuttons, Schnellstart für Kunden und kompakte Kennzahlen.
 
-2. **Eigene Seiten**
-   - `/showcase`
-   - `/preise`
-   - `/auftrag`
-   - `/kundenbereich`
+2. **Leistungen und Ablauf komplett neu aufgebaut**
+   Weniger Karten-Chaos, klare visuelle Hierarchie und ein moderner 6-Schritte-Prozess.
 
-3. **Adminbereich separat unter `/admin`**
-   Die interne Navigation und das Dashboard werden nicht mehr auf der öffentlichen Homepage angezeigt.
+3. **Showcase stärker gemacht**
+   Größere Designflächen, Kategorien-Filter und direkter Button „Ähnliches anfragen“.
 
-4. **Professioneller Header + Footer**
-   Logo, Navigation, klare Buttons, mobile Navigation und Footer wurden als echte Website-Struktur aufgebaut.
+4. **Preise und Auftragsseite verbessert**
+   Beliebte Leistungen werden markiert, Preisablauf erklärt und das Auftragsformular in klare Bereiche geteilt.
 
-5. **Railway-kompatible Routen**
-   Express liefert alle öffentlichen Seiten und `/admin` direkt aus. PostgreSQL und die bisherige Backend-Synchronisierung bleiben erhalten.
+5. **Abschlussbereich + Responsive Design**
+   Stärkerer Call-to-Action am Seitenende und bessere Darstellung auf Tablet und Smartphone.
 
-## Wichtig
-
-Der Adminbereich ist jetzt optisch und per URL getrennt, aber noch nicht durch einen echten Login geschützt. Das sollte als nächster Schritt umgesetzt werden.
+Adminbereich, PostgreSQL-Backend, Kundenbereich und vorhandene Funktionen bleiben erhalten.
