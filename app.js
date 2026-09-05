@@ -405,146 +405,325 @@ function showcase(){
 }
 
 function publicView(){
-  title.textContent="Öffentliche Seite";
-  subtitle.textContent="Moderne Startseite für Kunden, Showcase und Auftragsanfragen.";
-
-  const featured=state.showcase.slice(0,4);
+  document.title="Konya Clothing – Custom FiveM Clothing";
+  const featured=state.showcase.slice(0,6);
 
   root.innerHTML=`
-    <section class="public-hero-v2">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="site-brand" href="/" onclick="event.preventDefault();publicNavigate('home')">
+          <img src="/assets/konya-logo.png" alt="Konya Clothing">
+          <div>
+            <strong>Konya Clothing</strong>
+            <span>Custom FiveM Clothing</span>
+          </div>
+        </a>
+
+        <nav class="site-nav">
+          <a href="/" data-public-nav="home" class="active" onclick="event.preventDefault();publicNavigate('home')">Start</a>
+          <a href="/showcase" data-public-nav="showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
+          <a href="/preise" data-public-nav="prices" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
+          <a href="/auftrag" data-public-nav="order" onclick="event.preventDefault();publicNavigate('order')">Auftrag</a>
+          <a href="/kundenbereich" onclick="">Kundenbereich</a>
+        </nav>
+
+        <div class="site-header-actions">
+          <a class="secondary-btn site-login" href="/admin">Admin</a>
+          <a class="primary-btn" href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+        </div>
+
+        <button class="mobile-menu-btn" onclick="togglePublicMenu()" aria-label="Menü">☰</button>
+      </header>
+
+      <div class="mobile-site-nav hidden" id="mobileSiteNav">
+        <a href="/" onclick="event.preventDefault();publicNavigate('home');togglePublicMenu()">Start</a>
+        <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase');togglePublicMenu()">Showcase</a>
+        <a href="/preise" onclick="event.preventDefault();publicNavigate('prices');togglePublicMenu()">Preise</a>
+        <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order');togglePublicMenu()">Auftrag</a>
+        <a href="/kundenbereich">Kundenbereich</a>
+        <a href="/admin">Admin</a>
+      </div>
+
+      <main class="site-main" id="publicPage"></main>
+
+      <footer class="site-footer">
+        <div class="site-footer-brand">
+          <img src="/assets/konya-logo.png" alt="Konya Clothing">
+          <div>
+            <strong>Konya Clothing</strong>
+            <p>Individuelle FiveM-Kleidung, Texture Reworks und Custom Designs.</p>
+          </div>
+        </div>
+        <div class="site-footer-links">
+          <a href="/" onclick="event.preventDefault();publicNavigate('home')">Startseite</a>
+          <a href="/showcase" onclick="event.preventDefault();publicNavigate('showcase')">Showcase</a>
+          <a href="/preise" onclick="event.preventDefault();publicNavigate('prices')">Preise</a>
+          <a href="/auftrag" onclick="event.preventDefault();publicNavigate('order')">Auftrag anfragen</a>
+          <a href="/kundenbereich">Kundenbereich</a>
+        </div>
+        <div class="site-footer-bottom">
+          <span>© 2026 Konya Clothing</span>
+          <span>Alle Preise sind Richtwerte und werden nach Aufwand abgestimmt.</span>
+        </div>
+      </footer>
+    </div>
+  `;
+
+  const path=window.location.pathname;
+  if(path==="/showcase") renderPublicPage("showcase",false);
+  else if(path==="/preise") renderPublicPage("prices",false);
+  else if(path==="/auftrag") renderPublicPage("order",false);
+  else renderPublicPage("home",false);
+}
+
+window.publicNavigate=function(page){
+  const routes={home:"/",showcase:"/showcase",prices:"/preise",order:"/auftrag"};
+  const target=routes[page]||"/";
+  history.pushState({publicPage:page},"",target);
+  renderPublicPage(page,false);
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+window.onpopstate=function(){
+  if(window.location.pathname==="/admin" || window.location.pathname.startsWith("/admin/")) return;
+  if(window.location.pathname==="/kundenbereich" || window.location.pathname.startsWith("/kundenbereich/")) return;
+  const p=window.location.pathname;
+  renderPublicPage(p==="/showcase"?"showcase":p==="/preise"?"prices":p==="/auftrag"?"order":"home",false);
+};
+
+window.togglePublicMenu=function(){
+  const el=document.getElementById("mobileSiteNav");
+  if(el) el.classList.toggle("hidden");
+};
+
+function setPublicActive(page){
+  document.querySelectorAll("[data-public-nav]").forEach(a=>a.classList.toggle("active",a.dataset.publicNav===page));
+}
+
+function renderPublicPage(page){
+  const container=document.getElementById("publicPage");
+  if(!container) return;
+  setPublicActive(page);
+
+  if(page==="showcase"){
+    container.innerHTML=`
+      <section class="page-hero compact">
+        <div class="eyebrow">SHOWCASE</div>
+        <h1>Ausgewählte Designs</h1>
+        <p>Ein Überblick über mögliche Styles, Kategorien und individuelle Clothing-Projekte.</p>
+      </section>
+      <section class="site-section">
+        <div class="public-showcase-grid full">
+          ${state.showcase.map((x,i)=>`
+            <article class="public-showcase-card">
+              <div class="public-showcase-visual ${i%2===0?"alt":""}">
+                <div class="showcase-badge">${x.category||"Custom"}</div>
+                <span>${x.name||x.title||"Konya Clothing"}</span>
+              </div>
+              <div class="public-showcase-body">
+                <h3>${x.name||x.title||"Design"}</h3>
+                <p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p>
+              </div>
+            </article>`).join("")}
+        </div>
+      </section>
+      <section class="public-order-cta site-cta">
+        <div><span class="eyebrow">DEINE IDEE</span><h2>Du willst etwas Ähnliches?</h2><p>Schick uns Referenzen, Logo und deine Vorstellungen.</p></div>
+        <button class="primary-btn" onclick="publicNavigate('order')">Auftrag starten</button>
+      </section>`;
+    return;
+  }
+
+  if(page==="prices"){
+    container.innerHTML=`
+      <section class="page-hero compact">
+        <div class="eyebrow">PREISE</div>
+        <h1>Transparente Richtpreise</h1>
+        <p>Der endgültige Preis hängt vom Aufwand ab und wird vor Beginn des Auftrags abgestimmt.</p>
+      </section>
+      <section class="site-section price-page-grid">
+        ${state.pricing.map(group=>`
+          <article class="price-group-card">
+            <div class="price-group-head"><span>${group.title}</span></div>
+            <div class="price-group-body">
+              ${group.items.map(item=>`
+                <div class="price-line">
+                  <span>${item.name}</span>
+                  <strong>${item.min===item.max?`${item.min} €`:`${item.min}–${item.max} €`}</strong>
+                </div>`).join("")}
+            </div>
+          </article>`).join("")}
+      </section>
+      <div class="public-price-note site-price-note">Alle Preise dienen als Richtwerte. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
+      <section class="public-order-cta site-cta">
+        <div><span class="eyebrow">PREISANFRAGE</span><h2>Du willst einen genauen Preis?</h2><p>Beschreibe dein Projekt und wir geben dir ein konkretes Angebot.</p></div>
+        <button class="primary-btn" onclick="publicNavigate('order')">Preis anfragen</button>
+      </section>`;
+    return;
+  }
+
+  if(page==="order"){
+    container.innerHTML=`
+      <section class="page-hero compact">
+        <div class="eyebrow">AUFTRAG</div>
+        <h1>Deinen Auftrag starten</h1>
+        <p>Je genauer deine Angaben sind, desto schneller können wir deinen Auftrag einschätzen und bearbeiten.</p>
+      </section>
+      <section class="site-section order-page-layout">
+        <article class="order-page-card">
+          <div class="panel-head"><h3>Auftragsanfrage</h3><span>Unverbindlich anfragen</span></div>
+          <form id="publicInlineOrderForm" class="order-page-form">
+            <div class="form-grid two">
+              <div class="form-group"><label>Name *</label><input name="client" required placeholder="Dein Name"></div>
+              <div class="form-group"><label>Discord *</label><input name="discord" required placeholder="name oder ID"></div>
+            </div>
+            <div class="form-grid two">
+              <div class="form-group"><label>Organisation / Unternehmen</label><input name="organization" placeholder="Optional"></div>
+              <div class="form-group"><label>Kategorie *</label><select name="category" required>${state.categories.map(c=>`<option>${c}</option>`).join("")}</select></div>
+            </div>
+            <div class="form-grid two">
+              <div class="form-group"><label>Produkt / Leistung *</label>
+                <select name="product" required>
+                  ${state.pricing.flatMap(g=>g.items.map(i=>`<option value="${i.name}">${i.name} · ${i.min===i.max?i.min+" €":i.min+"–"+i.max+" €"}</option>`)).join("")}
+                </select>
+              </div>
+              <div class="form-group"><label>Wunschtermin</label><input name="deadline" type="date"></div>
+            </div>
+            <div class="form-group"><label>Beschreibung *</label><textarea name="description" required rows="7" placeholder="Was genau möchtest du? Farben, Logos, Stil, Referenzen, gewünschte Änderungen ..."></textarea></div>
+            <div class="form-group"><label>Dateien / Referenzen</label><input name="files" type="file" accept="image/*,.zip,.rar,.pdf" multiple></div>
+            <div class="form-note">Maximal 6 Dateien mit jeweils 2 MB. Große Final-Dateien werden später über die dauerhafte Dateiablage geliefert.</div>
+            <button class="primary-btn large" type="submit">Auftrag unverbindlich anfragen</button>
+          </form>
+        </article>
+        <aside class="order-info-card">
+          <span class="eyebrow">SO GEHT ES WEITER</span>
+          <h3>Nach deiner Anfrage</h3>
+          <div class="mini-step"><b>01</b><span>Wir prüfen deine Angaben und den Aufwand.</span></div>
+          <div class="mini-step"><b>02</b><span>Du erhältst einen Preis und die Auftragsdetails.</span></div>
+          <div class="mini-step"><b>03</b><span>Nach Annahme startet die Bearbeitung.</span></div>
+          <div class="mini-step"><b>04</b><span>Du erhältst eine Vorschau zur Freigabe.</span></div>
+          <div class="mini-step"><b>05</b><span>Nach Freigabe werden die finalen Dateien ausgeliefert.</span></div>
+        </aside>
+      </section>`;
+    bindInlinePublicOrderForm();
+    return;
+  }
+
+  const featured=state.showcase.slice(0,4);
+  container.innerHTML=`
+    <section class="public-hero-v2 site-landing-hero">
       <div class="public-hero-overlay"></div>
       <div class="public-hero-content">
-        <div class="public-brand-chip">
-          <img src="assets/konya-logo.png" alt="Konya Clothing Logo">
-          <span>Konya Clothing</span>
-        </div>
+        <div class="public-brand-chip"><img src="/assets/konya-logo.png" alt="Konya Clothing Logo"><span>Konya Clothing</span></div>
         <div class="eyebrow">CUSTOM FIVEM CLOTHING</div>
-        <h1>Dein Style.<br><span>Dein Clothing.</span></h1>
-        <p>Individuelle FiveM-Kleidung, saubere Texturen und hochwertige Designs – von kleinen Anpassungen bis zum kompletten Custom-Outfit.</p>
+        <h1>Clothing, das zu deinem <span>Projekt passt.</span></h1>
+        <p>Individuelle FiveM-Kleidung, saubere Texture Reworks und hochwertige Custom Designs – professionell geplant und übersichtlich abgewickelt.</p>
         <div class="public-hero-actions">
-          <button class="primary-btn public-cta" onclick="openPublicOrderModal()">Auftrag anfragen</button>
-          <button class="secondary-btn public-cta" onclick="scrollToPublicSection('publicShowcase')">Showcase ansehen</button>
+          <button class="primary-btn public-cta" onclick="publicNavigate('order')">Auftrag anfragen</button>
+          <button class="secondary-btn public-cta" onclick="publicNavigate('showcase')">Showcase ansehen</button>
         </div>
-        <div class="public-trust-row">
-          <span>✓ Individuelle Designs</span>
-          <span>✓ Klare Preisabsprache</span>
-          <span>✓ Vorschau & Freigabe</span>
-        </div>
+        <div class="public-trust-row"><span>✓ Individuelle Designs</span><span>✓ Klare Preisabsprache</span><span>✓ Vorschau & Freigabe</span></div>
       </div>
     </section>
 
-    <section class="public-quick-grid">
+    <section class="public-quick-grid site-stats">
       <div class="public-stat-card"><strong>${state.showcase.length}+</strong><span>Showcase Designs</span></div>
       <div class="public-stat-card"><strong>${state.orders.length}</strong><span>Aufträge im System</span></div>
       <div class="public-stat-card"><strong>${state.customers.length}</strong><span>Kunden</span></div>
       <div class="public-stat-card"><strong>48h</strong><span>Express möglich</span></div>
     </section>
 
-    <section class="public-section">
-      <div class="public-section-head">
-        <span class="eyebrow">LEISTUNGEN</span>
-        <h2>Was wir für dich machen</h2>
-        <p>Übersichtlich, klar und ohne unnötige Umwege – vom ersten Entwurf bis zur finalen Datei.</p>
-      </div>
+    <section class="site-section">
+      <div class="public-section-head"><span class="eyebrow">LEISTUNGEN</span><h2>Was wir für dich machen</h2><p>Von einzelnen Texturen bis zum kompletten Outfit.</p></div>
       <div class="public-service-grid">
-        <article class="public-service-card">
-          <div class="service-icon">✦</div>
-          <h3>Custom Clothing</h3>
-          <p>Individuelle FiveM-Kleidung nach deinen Vorstellungen – von Einzelteilen bis zum kompletten Outfit.</p>
-        </article>
-        <article class="public-service-card">
-          <div class="service-icon">◇</div>
-          <h3>Texture Rework</h3>
-          <p>Bestehende Texturen werden sauber überarbeitet, geschärft, angepasst oder komplett neu gestaltet.</p>
-        </article>
-        <article class="public-service-card">
-          <div class="service-icon">⌁</div>
-          <h3>Logo Integration</h3>
-          <p>Logos und Designs werden passend auf Kleidung platziert und optisch sauber eingearbeitet.</p>
-        </article>
+        <article class="public-service-card"><div class="service-icon">✦</div><h3>Custom Clothing</h3><p>Individuelle Kleidung nach deinen Vorstellungen – von Einzelteilen bis zu kompletten Sets.</p></article>
+        <article class="public-service-card"><div class="service-icon">◇</div><h3>Texture Rework</h3><p>Bestehende Texturen werden sauber überarbeitet, geschärft und optisch verbessert.</p></article>
+        <article class="public-service-card"><div class="service-icon">⌁</div><h3>Logo Integration</h3><p>Logos und Designs werden passend und sauber auf Kleidung eingearbeitet.</p></article>
       </div>
     </section>
 
-    <section class="public-section public-process-section">
-      <div class="public-section-head">
-        <span class="eyebrow">ABLAUF</span>
-        <h2>So läuft dein Auftrag ab</h2>
-      </div>
+    <section class="site-section public-process-section">
+      <div class="public-section-head"><span class="eyebrow">ABLAUF</span><h2>In 6 Schritten zum fertigen Clothing</h2></div>
       <div class="public-process-grid">
-        ${[
-          ["01","Anfrage","Du sendest uns deinen Wunsch, Referenzen und gewünschte Kleidung."],
-          ["02","Preis & Planung","Du erhältst einen Richtpreis und wir stimmen Details mit dir ab."],
-          ["03","Bearbeitung","Dein Auftrag wird einem Designer zugewiesen und umgesetzt."],
-          ["04","Vorschau","Du bekommst eine Vorschau und kannst Änderungen anfordern."],
-          ["05","Freigabe","Nach deiner Freigabe wird der Auftrag fertiggestellt."],
-          ["06","Auslieferung","Du erhältst deine finalen Dateien."]
-        ].map(x=>`
-          <div class="public-process-card">
-            <span>${x[0]}</span>
-            <h3>${x[1]}</h3>
-            <p>${x[2]}</p>
-          </div>`).join("")}
+        ${[["01","Anfrage","Wunsch und Referenzen senden."],["02","Preis","Aufwand und Preis abstimmen."],["03","Bearbeitung","Designer setzt den Auftrag um."],["04","Vorschau","Du bekommst eine Vorschau."],["05","Freigabe","Änderungen oder Freigabe."],["06","Auslieferung","Finale Dateien erhalten."]].map(x=>`<div class="public-process-card"><span>${x[0]}</span><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")}
       </div>
     </section>
 
-    <section class="public-section" id="publicShowcase">
+    <section class="site-section">
       <div class="public-section-head public-section-head-row">
-        <div>
-          <span class="eyebrow">SHOWCASE</span>
-          <h2>Ausgewählte Arbeiten</h2>
-          <p>Ein kleiner Einblick in mögliche Styles und Kategorien.</p>
-        </div>
-        <button class="secondary-btn" onclick="render('showcase')">Alle ansehen</button>
+        <div><span class="eyebrow">SHOWCASE</span><h2>Ausgewählte Arbeiten</h2><p>Ein kleiner Einblick in verschiedene Styles.</p></div>
+        <button class="secondary-btn" onclick="publicNavigate('showcase')">Alle ansehen</button>
       </div>
       <div class="public-showcase-grid">
-        ${featured.map((x,i)=>`
-          <article class="public-showcase-card">
-            <div class="public-showcase-visual ${i%2===0?"alt":""}">
-              <div class="showcase-badge">${x.category||"Custom"}</div>
-              <span>${x.name||x.title||"Konya Clothing"}</span>
-            </div>
-            <div class="public-showcase-body">
-              <h3>${x.name||x.title||"Design"}</h3>
-              <p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p>
-            </div>
-          </article>`).join("")}
+        ${featured.map((x,i)=>`<article class="public-showcase-card"><div class="public-showcase-visual ${i%2===0?"alt":""}"><div class="showcase-badge">${x.category||"Custom"}</div><span>${x.name||x.title||"Konya Clothing"}</span></div><div class="public-showcase-body"><h3>${x.name||x.title||"Design"}</h3><p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p></div></article>`).join("")}
       </div>
     </section>
 
-    <section class="public-section">
-      <div class="public-section-head">
-        <span class="eyebrow">PREISE</span>
-        <h2>Klare Richtpreise</h2>
-        <p>Die wichtigsten Preise auf einen Blick. Der endgültige Preis wird nach Aufwand und Absprache festgelegt.</p>
+    <section class="site-section">
+      <div class="public-section-head public-section-head-row">
+        <div><span class="eyebrow">PREISE</span><h2>Die wichtigsten Richtpreise</h2><p>Transparent und schnell erfassbar.</p></div>
+        <button class="secondary-btn" onclick="publicNavigate('prices')">Komplette Preisliste</button>
       </div>
       <div class="public-price-grid">
-        ${[
-          ["T-Shirt / Top","5–8 €"],
-          ["Hoodie / Pullover","8–12 €"],
-          ["Jacke / Mantel","12–18 €"],
-          ["Hose / Jeans","8–12 €"],
-          ["Custom-Outfit","40–70 €"],
-          ["Einsatzkleidung","45–80 €"]
-        ].map(x=>`<div class="public-price-card"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("")}
+        ${[["T-Shirt / Top","5–8 €"],["Hoodie / Pullover","8–12 €"],["Jacke / Mantel","12–18 €"],["Hose / Jeans","8–12 €"],["Custom-Outfit","40–70 €"],["Einsatzkleidung","45–80 €"]].map(x=>`<div class="public-price-card"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("")}
       </div>
-      <div class="public-price-note">Alle Preise sind Richtwerte. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
     </section>
 
-    <section class="public-order-cta">
-      <div>
-        <span class="eyebrow">DEIN PROJEKT</span>
-        <h2>Bereit für deinen Auftrag?</h2>
-        <p>Schick uns deine Idee, Referenzen und Wünsche. Danach bekommst du einen klaren Ablauf und eine Preisabsprache.</p>
-      </div>
-      <button class="primary-btn public-cta" onclick="openPublicOrderModal()">Jetzt Auftrag starten</button>
-    </section>
-  `;
+    <section class="public-order-cta site-cta">
+      <div><span class="eyebrow">DEIN PROJEKT</span><h2>Bereit für deinen Auftrag?</h2><p>Schick uns deine Idee und wir melden uns mit Preis und Ablauf.</p></div>
+      <button class="primary-btn" onclick="publicNavigate('order')">Jetzt Auftrag starten</button>
+    </section>`;
 }
 
-window.scrollToPublicSection=function(id){
-  const el=document.getElementById(id);
-  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
-};
+function bindInlinePublicOrderForm(){
+  const form=document.getElementById("publicInlineOrderForm");
+  if(!form) return;
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const fd=new FormData(form);
+    const files=await filesToDataUrls(form.elements.files.files);
+    if(files===null) return;
+    const product=fd.get("product");
+    const price=priceLookup(product);
+    const id=nextOrderId();
+    const client=String(fd.get("client")||"").trim();
+    const discord=String(fd.get("discord")||"").trim();
+    const organization=String(fd.get("organization")||"").trim()||"Privat";
+    const order={
+      id,client,discord,organization,category:fd.get("category"),product,
+      description:String(fd.get("description")||"").trim(),
+      designer:"Noch offen",status:"Anfrage",priority:"Normal",
+      progress:5,deadline:fd.get("deadline")||"",created:new Date().toLocaleDateString("de-DE"),
+      priceMin:price?.min||0,priceMax:price?.max||0,finalPrice:0,paymentStatus:"Nicht berechnet",
+      paidAt:"",files,previews:[],changeRequest:"",customerCode:id,internalNote:"",
+      history:[{label:"Auftragsanfrage eingereicht",date:new Date().toLocaleDateString("de-DE")}]
+    };
+    state.orders.unshift(order);
+    const customer=state.customers.find(c=>c.name.toLowerCase()===client.toLowerCase() || (discord && c.discord===discord));
+    if(customer){
+      customer.discord=discord||customer.discord;
+      customer.organization=organization||customer.organization;
+      customer.status="Aktiv";
+    }else{
+      state.customers.push({name:client,discord,organization,orders:0,revenue:0,status:"Aktiv"});
+    }
+    addNotification(`Neuer Auftrag ${id} von ${client}.`,"newOrder");
+    state.logs.unshift(`Öffentliche Auftragsanfrage ${id} von ${client}`);
+    save();
+    container=document.getElementById("publicPage");
+    if(container) container.innerHTML=`
+      <section class="order-success-card">
+        <div class="success-icon">✓</div>
+        <span class="eyebrow">ANFRAGE GESENDET</span>
+        <h1>Vielen Dank, ${client}.</h1>
+        <p>Deine Auftragsnummer lautet <strong>${id}</strong>. Bewahre sie auf, damit du deinen Auftrag später im Kundenbereich verfolgen kannst.</p>
+        <div class="success-actions">
+          <a class="primary-btn" href="/kundenbereich">Zum Kundenbereich</a>
+          <button class="secondary-btn" onclick="publicNavigate('home')">Zur Startseite</button>
+        </div>
+      </section>`;
+  });
+}
 
 function customerArea(){
   title.textContent="Kundenbereich";
@@ -1142,15 +1321,19 @@ async function loadBackendState(){
       normalizeRemoteState();
       localStorage.setItem("konyaAdminStateV3",JSON.stringify(state));
       backendReady=true;
-      render("dashboard");
+      if(isAdminRoute) render("dashboard");
+      else if(isCustomerRoute) customerArea();
+      else publicView();
       setBackendStatus("online","Datenbank verbunden");
-      showToast("Zentrale Datenbank geladen.");
+      if(isAdminRoute) showToast("Zentrale Datenbank geladen.");
     }else{
       backendReady=true;
       normalizeRemoteState();
       await pushStateToBackend();
-      render("dashboard");
-      showToast("Datenbank wurde mit deinem aktuellen Stand eingerichtet.");
+      if(isAdminRoute) render("dashboard");
+      else if(isCustomerRoute) customerArea();
+      else publicView();
+      if(isAdminRoute) showToast("Datenbank wurde mit deinem aktuellen Stand eingerichtet.");
     }
   }catch(err){
     console.error("Backend load failed:",err);
@@ -1161,5 +1344,11 @@ async function loadBackendState(){
 }
 
 syncCustomerMetrics();
-render("dashboard");
+if(isAdminRoute){
+  render("dashboard");
+}else if(isCustomerRoute){
+  customerArea();
+}else{
+  publicView();
+}
 loadBackendState();

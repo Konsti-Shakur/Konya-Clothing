@@ -96,6 +96,10 @@ app.use(express.static(__dirname, {
   maxAge: process.env.NODE_ENV === "production" ? "5m" : 0,
 }));
 
+["/","/showcase","/preise","/auftrag","/kundenbereich","/admin"].forEach(route=>{
+  app.get(route, (_req,res)=>res.sendFile(path.join(__dirname,"index.html")));
+});
+
 app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
