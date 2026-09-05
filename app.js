@@ -405,21 +405,146 @@ function showcase(){
 }
 
 function publicView(){
-  title.textContent="Öffentliche Seite"; subtitle.textContent="Konya Clothing – öffentliche Marken- und Auftragsseite.";
+  title.textContent="Öffentliche Seite";
+  subtitle.textContent="Moderne Startseite für Kunden, Showcase und Auftragsanfragen.";
+
+  const featured=state.showcase.slice(0,4);
+
   root.innerHTML=`
-  <div class="brand-banner"><img src="assets/konya-banner.png" alt="Konya Clothing Banner"></div>
-  <div class="hero-public">
-    <div><div class="hero-brand-row"><img src="assets/konya-logo.png" class="brand-logo-inline"><div class="brand-copy"><strong>KONYA</strong><span>CLOTHING</span></div></div>
-    <div class="eyebrow">CUSTOM FIVEM CLOTHING</div><h2>Deine Idee.<br>Dein Style.<br>Dein Clothing.</h2>
-    <p>Individuelle FiveM-Kleidung für Spieler, Crews, Unternehmen und Fraktionen. Vom kleinen Rework bis zum kompletten Outfit.</p>
-    <div style="margin-top:22px"><button class="primary-btn" onclick="openPublicOrderModal()">Auftrag anfragen</button> <button class="secondary-btn" onclick="render('showcase')">Showcase ansehen</button></div></div>
-    <img src="assets/konya-logo.png" class="hero-logo">
-  </div>
-  <div class="panel" style="margin-top:18px"><div class="panel-head"><h3>💰 Preisliste</h3><span>Richtpreise</span></div><div class="panel-body pricing-sections">
-    ${state.pricing.map(g=>`<div class="pricing-section"><div class="pricing-section-head"><h3>${g.icon} ${g.group}</h3></div><div class="pricing-list">${g.items.map(i=>`<div class="pricing-row" style="grid-template-columns:1fr auto"><div><b>${i.name}</b></div><span class="price-highlight">${priceRange(i)}</span></div>`).join("")}</div></div>`).join("")}
-    <div class="inline-note">📌 Alle Preise dienen als Richtwerte und können je nach Aufwand variieren. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
-  </div></div>`;
+    <section class="public-hero-v2">
+      <div class="public-hero-overlay"></div>
+      <div class="public-hero-content">
+        <div class="public-brand-chip">
+          <img src="assets/konya-logo.png" alt="Konya Clothing Logo">
+          <span>Konya Clothing</span>
+        </div>
+        <div class="eyebrow">CUSTOM FIVEM CLOTHING</div>
+        <h1>Dein Style.<br><span>Dein Clothing.</span></h1>
+        <p>Individuelle FiveM-Kleidung, saubere Texturen und hochwertige Designs – von kleinen Anpassungen bis zum kompletten Custom-Outfit.</p>
+        <div class="public-hero-actions">
+          <button class="primary-btn public-cta" onclick="openPublicOrderModal()">Auftrag anfragen</button>
+          <button class="secondary-btn public-cta" onclick="scrollToPublicSection('publicShowcase')">Showcase ansehen</button>
+        </div>
+        <div class="public-trust-row">
+          <span>✓ Individuelle Designs</span>
+          <span>✓ Klare Preisabsprache</span>
+          <span>✓ Vorschau & Freigabe</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="public-quick-grid">
+      <div class="public-stat-card"><strong>${state.showcase.length}+</strong><span>Showcase Designs</span></div>
+      <div class="public-stat-card"><strong>${state.orders.length}</strong><span>Aufträge im System</span></div>
+      <div class="public-stat-card"><strong>${state.customers.length}</strong><span>Kunden</span></div>
+      <div class="public-stat-card"><strong>48h</strong><span>Express möglich</span></div>
+    </section>
+
+    <section class="public-section">
+      <div class="public-section-head">
+        <span class="eyebrow">LEISTUNGEN</span>
+        <h2>Was wir für dich machen</h2>
+        <p>Übersichtlich, klar und ohne unnötige Umwege – vom ersten Entwurf bis zur finalen Datei.</p>
+      </div>
+      <div class="public-service-grid">
+        <article class="public-service-card">
+          <div class="service-icon">✦</div>
+          <h3>Custom Clothing</h3>
+          <p>Individuelle FiveM-Kleidung nach deinen Vorstellungen – von Einzelteilen bis zum kompletten Outfit.</p>
+        </article>
+        <article class="public-service-card">
+          <div class="service-icon">◇</div>
+          <h3>Texture Rework</h3>
+          <p>Bestehende Texturen werden sauber überarbeitet, geschärft, angepasst oder komplett neu gestaltet.</p>
+        </article>
+        <article class="public-service-card">
+          <div class="service-icon">⌁</div>
+          <h3>Logo Integration</h3>
+          <p>Logos und Designs werden passend auf Kleidung platziert und optisch sauber eingearbeitet.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="public-section public-process-section">
+      <div class="public-section-head">
+        <span class="eyebrow">ABLAUF</span>
+        <h2>So läuft dein Auftrag ab</h2>
+      </div>
+      <div class="public-process-grid">
+        ${[
+          ["01","Anfrage","Du sendest uns deinen Wunsch, Referenzen und gewünschte Kleidung."],
+          ["02","Preis & Planung","Du erhältst einen Richtpreis und wir stimmen Details mit dir ab."],
+          ["03","Bearbeitung","Dein Auftrag wird einem Designer zugewiesen und umgesetzt."],
+          ["04","Vorschau","Du bekommst eine Vorschau und kannst Änderungen anfordern."],
+          ["05","Freigabe","Nach deiner Freigabe wird der Auftrag fertiggestellt."],
+          ["06","Auslieferung","Du erhältst deine finalen Dateien."]
+        ].map(x=>`
+          <div class="public-process-card">
+            <span>${x[0]}</span>
+            <h3>${x[1]}</h3>
+            <p>${x[2]}</p>
+          </div>`).join("")}
+      </div>
+    </section>
+
+    <section class="public-section" id="publicShowcase">
+      <div class="public-section-head public-section-head-row">
+        <div>
+          <span class="eyebrow">SHOWCASE</span>
+          <h2>Ausgewählte Arbeiten</h2>
+          <p>Ein kleiner Einblick in mögliche Styles und Kategorien.</p>
+        </div>
+        <button class="secondary-btn" onclick="render('showcase')">Alle ansehen</button>
+      </div>
+      <div class="public-showcase-grid">
+        ${featured.map((x,i)=>`
+          <article class="public-showcase-card">
+            <div class="public-showcase-visual ${i%2===0?"alt":""}">
+              <div class="showcase-badge">${x.category||"Custom"}</div>
+              <span>${x.name||x.title||"Konya Clothing"}</span>
+            </div>
+            <div class="public-showcase-body">
+              <h3>${x.name||x.title||"Design"}</h3>
+              <p>${x.description||"Individuelles Clothing Design von Konya Clothing."}</p>
+            </div>
+          </article>`).join("")}
+      </div>
+    </section>
+
+    <section class="public-section">
+      <div class="public-section-head">
+        <span class="eyebrow">PREISE</span>
+        <h2>Klare Richtpreise</h2>
+        <p>Die wichtigsten Preise auf einen Blick. Der endgültige Preis wird nach Aufwand und Absprache festgelegt.</p>
+      </div>
+      <div class="public-price-grid">
+        ${[
+          ["T-Shirt / Top","5–8 €"],
+          ["Hoodie / Pullover","8–12 €"],
+          ["Jacke / Mantel","12–18 €"],
+          ["Hose / Jeans","8–12 €"],
+          ["Custom-Outfit","40–70 €"],
+          ["Einsatzkleidung","45–80 €"]
+        ].map(x=>`<div class="public-price-card"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("")}
+      </div>
+      <div class="public-price-note">Alle Preise sind Richtwerte. Der endgültige Preis wird nach Absprache im Ticket festgelegt.</div>
+    </section>
+
+    <section class="public-order-cta">
+      <div>
+        <span class="eyebrow">DEIN PROJEKT</span>
+        <h2>Bereit für deinen Auftrag?</h2>
+        <p>Schick uns deine Idee, Referenzen und Wünsche. Danach bekommst du einen klaren Ablauf und eine Preisabsprache.</p>
+      </div>
+      <button class="primary-btn public-cta" onclick="openPublicOrderModal()">Jetzt Auftrag starten</button>
+    </section>
+  `;
 }
+
+window.scrollToPublicSection=function(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+};
 
 function customerArea(){
   title.textContent="Kundenbereich";
